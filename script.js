@@ -17,12 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Renderiza as Ferramentas
     const renderToolsGrid = () => {
         toolsGrid.innerHTML = dbTools.map(t => `
-            <div class="tool-config-card" style="border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden;">
-                <label class="checkbox-item" style="margin: 0; padding: 12px; border: none; border-bottom: 1px solid transparent;">
-                    <input type="checkbox" name="tools" value="${t.id}" onchange="const opts = document.getElementById('opts-${t.id}'); opts.style.display = this.checked ? 'block' : 'none'; this.parentElement.style.borderBottomColor = this.checked ? 'var(--border-color)' : 'transparent';">
-                    <span>${t.name}</span>
-                </label>
-                <div id="opts-${t.id}" style="display: none; padding: 12px; background: rgba(0,0,0,0.02);">
+            <div class="tool-config-card" style="border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: var(--bg-card);">
+                <div style="display: flex; align-items: center; padding: 12px; justify-content: space-between;">
+                    <label class="checkbox-item" style="margin: 0; padding: 0; border: none; background: transparent; flex: 1;">
+                        <input type="checkbox" name="tools" value="${t.id}">
+                        <span>${t.name}</span>
+                    </label>
+                    <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${t.id}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.opacity = e.style.display === 'none' ? '0.5' : '1';" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; opacity: 0.5; transition: opacity 0.2s;">⚙️</button>
+                </div>
+                <div id="opts-${t.id}" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Mensalidade (R$)</label>
