@@ -313,7 +313,7 @@ const getProposalTemplate = (data) => {
                     <h3 style="margin-top: 0; color: #252F35;">O Cenário Ideal para o seu Negócio</h3>
                     <p class="highlight-text">
                         Nós entendemos as necessidades do segmento de <strong>${data.segmentLabel}</strong>. 
-                        ${data.migratedSystem ? `Para facilitar a sua transição do sistema <em>${data.migratedSystem}</em>, preparamos uma solução robusta e moderna.` : 'Preparamos uma solução robusta e moderna para impulsionar seus resultados.'}
+                        ${data.hasMigration ? `Para facilitar a sua transição do sistema <em>${data.migratedSystem || 'Atual'}</em>, preparamos uma solução robusta e moderna.` : 'Preparamos uma implantação estruturada do absoluto zero para garantir que sua empresa inicie com as melhores práticas de gestão.'}
                     </p>
                 </div>
 
@@ -364,7 +364,7 @@ const getProposalTemplate = (data) => {
                 <h2 class="section-title">Investimento</h2>
                 <div class="price-box">
                     <div class="price-item">
-                        <span class="price-label">Taxa de Implantação e Migração</span>
+                        <span class="price-label">Taxa de Implantação${data.hasMigration ? ' e Migração' : ''}</span>
                         <p class="price-value">R$ ${data.implCost}</p>
                         <p style="font-size: 13px; opacity: 0.8; margin-top: 10px;">Tempo estimado: ${data.implTime}</p>
                     </div>
