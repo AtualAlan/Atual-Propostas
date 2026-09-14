@@ -72,6 +72,7 @@ const getProposalTemplate = (data) => {
                 margin-bottom: 20px;
                 border-bottom: 2px solid #e2e8f0;
                 padding-bottom: 10px;
+                page-break-after: avoid;
             }
             .card {
                 background: #f8fafc;
@@ -79,6 +80,7 @@ const getProposalTemplate = (data) => {
                 border-radius: 12px;
                 padding: 24px;
                 margin-bottom: 20px;
+                page-break-inside: avoid;
             }
             .highlight-text {
                 font-size: 16px;
@@ -96,6 +98,7 @@ const getProposalTemplate = (data) => {
                 border-right: 1px solid #e2e8f0;
                 border-bottom: 1px solid #e2e8f0;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+                page-break-inside: avoid;
             }
             .tool-summary {
                 padding: 14px 16px;
@@ -168,6 +171,7 @@ const getProposalTemplate = (data) => {
                 border-radius: 12px;
                 padding: 24px;
                 animation: fadeIn 0.3s;
+                page-break-inside: avoid;
             }
             .tab-content.active {
                 display: block;
@@ -202,6 +206,7 @@ const getProposalTemplate = (data) => {
                 flex-wrap: wrap;
                 gap: 20px;
                 margin-top: 30px;
+                page-break-inside: avoid;
             }
             .price-item {
                 flex: 1;
@@ -212,6 +217,7 @@ const getProposalTemplate = (data) => {
                 border-radius: 12px;
                 text-align: center;
                 box-shadow: 0 10px 15px -3px rgba(37, 47, 53, 0.3);
+                page-break-inside: avoid;
             }
             .price-item.secondary {
                 background: #00A886;
@@ -370,7 +376,7 @@ const getProposalTemplate = (data) => {
                     </div>
                 </div>
 
-                <div style="margin-top: 30px; font-size: 13px; color: #64748b; background: #f1f5f9; padding: 15px; border-radius: 8px;">
+                <div style="margin-top: 30px; font-size: 13px; color: #64748b; background: #f1f5f9; padding: 15px; border-radius: 8px; page-break-inside: avoid;">
                     <strong>Considerações Finais:</strong> Após a conclusão da implantação, treinamentos adicionais podem ser contratados ao valor fixo de R$ 80,00 por hora. Qualquer ajuste ou alteração no escopo poderá resultar em modificações nos prazos e valores.
                 </div>
             </div>
