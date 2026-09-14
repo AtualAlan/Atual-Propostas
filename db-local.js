@@ -522,6 +522,8 @@ const updateProposalStatus = (id, newStatus, lostReason = null, newOrderArray = 
         if (newStatus === 'perdida' && lostReason) {
             if (!p.data) p.data = {};
             p.data.lostReason = lostReason;
+        } else if (newStatus !== 'perdida' && p.data) {
+            delete p.data.lostReason;
         }
         
         if (newOrderArray && Array.isArray(newOrderArray)) {
