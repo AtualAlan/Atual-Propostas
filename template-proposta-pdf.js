@@ -1,10 +1,34 @@
 const getProposalTemplatePDF = (data) => {
+    let totalImplCost = 0;
+    if (data.implCost) {
+        const rawVal = data.implCost.replace(/[^\d,]/g, '').replace(',', '.');
+        const parsed = parseFloat(rawVal);
+        if (!isNaN(parsed)) totalImplCost += parsed;
+    }
+
+    if (Array.isArray(data.tools)) {
+        data.tools.forEach(t => {
+            if (t.priceImpl && t.sumImpl) {
+                const rawVal = t.priceImpl.replace(/[^\d,]/g, '').replace(',', '.');
+                const parsed = parseFloat(rawVal);
+                if (!isNaN(parsed)) totalImplCost += parsed;
+            }
+        });
+    }
+    const finalImplCostStr = totalImplCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     // Ferramentas em formato bloco simples (não sanfona)
     const toolsHtml = data.tools.map(tool => `
         <div class="card" style="margin-bottom: 12px; border-left: 4px solid #00A886; page-break-inside: avoid; padding: 15px;">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">` : `<span style="color: #00A886; font-size: 20px;">✓</span>`}
-                <span style="font-weight: 600; color: #252F35; font-size: 15px;">${tool.name}</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">` : `<span style="color: #00A886; font-size: 20px;">✓</span>`}
+                    <span style="font-weight: 600; color: #252F35; font-size: 15px;">${tool.name}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-right: 10px;">
+                    ${tool.priceMensal && tool.priceMensal !== '0,00' ? `<span style="background: rgba(0,168,134,0.1); color: #00A886; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; width: fit-content;">+ R$ ${tool.priceMensal}/mês</span>` : ''}
+                    ${tool.priceImpl && tool.priceImpl !== '0,00' && !tool.sumImpl ? `<span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; width: fit-content;">Implantação: R$ ${tool.priceImpl}</span>` : ''}
+                </div>
             </div>
             <div style="color: #475569; font-size: 14px; line-height: 1.6;">
                 ${tool.desc}
@@ -99,7 +123,7 @@ const getProposalTemplatePDF = (data) => {
                 <div class="price-box">
                     <div class="price-item">
                         <span class="price-label">Taxa de Implantação${data.hasMigration ? ' e Migração' : ''}</span>
-                        <p class="price-value">R$ ${data.implCost}</p>
+                        <p class="price-value">R$ ${finalImplCostStr}</p>
                         <p style="font-size: 13px; opacity: 0.8; margin-top: 10px;">Tempo estimado: ${data.implTime}</p>
                     </div>
                     <div class="price-item secondary">

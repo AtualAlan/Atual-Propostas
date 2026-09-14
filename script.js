@@ -15,13 +15,35 @@ document.addEventListener('DOMContentLoaded', () => {
         dbSegments.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         
     // Renderiza as Ferramentas
-    toolsGrid.innerHTML = dbTools.map(t => `
-        <div class="form-group" style="margin-top: 10px;">
-            <label class="checkbox-label" style="width: fit-content; background: transparent; padding: 0;">
-                <input type="checkbox" value="${t.id}"> ${t.name}
-            </label>
-        </div>
-    `).join('');
+    const renderToolsGrid = () => {
+        toolsGrid.innerHTML = dbTools.map(t => `
+            <div class="tool-config-card" style="border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden;">
+                <label class="checkbox-item" style="margin: 0; padding: 12px; border: none; border-bottom: 1px solid transparent;">
+                    <input type="checkbox" name="tools" value="${t.id}" onchange="const opts = document.getElementById('opts-${t.id}'); opts.style.display = this.checked ? 'block' : 'none'; this.parentElement.style.borderBottomColor = this.checked ? 'var(--border-color)' : 'transparent';">
+                    <span>${t.name}</span>
+                </label>
+                <div id="opts-${t.id}" style="display: none; padding: 12px; background: rgba(0,0,0,0.02);">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 120px;">
+                            <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Mensalidade (R$)</label>
+                            <input type="text" id="price-mensal-${t.id}" class="form-control" placeholder="Ex: 50,00" style="padding: 6px; font-size: 13px; height: auto;">
+                        </div>
+                        <div style="flex: 1; min-width: 120px;">
+                            <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Implantação (R$)</label>
+                            <input type="text" id="price-impl-${t.id}" class="form-control" placeholder="Ex: 100,00" style="padding: 6px; font-size: 13px; height: auto;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <label style="font-size: 12px; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" id="sum-impl-${t.id}" checked>
+                            Somar implantação ao total da proposta
+                        </label>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+    renderToolsGrid();
     
     const checkboxes = toolsGrid.querySelectorAll('input[type="checkbox"]');
     
@@ -153,10 +175,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(cb => cb.checked)
             .map(cb => {
                 const dbTool = dbTools.find(t => t.id === cb.value);
+                const mensalInput = document.getElementById(`price-mensal-${cb.value}`);
+                const implInput = document.getElementById(`price-impl-${cb.value}`);
+                const sumImplCheck = document.getElementById(`sum-impl-${cb.value}`);
+                
                 return {
                     name: cb.value,
                     desc: dbTool ? dbTool.desc : "Módulo adicional para potencializar sua gestão.",
-                    img: dbTool ? dbTool.img : ""
+                    img: dbTool ? dbTool.img : "",
+                    priceMensal: mensalInput ? mensalInput.value : '',
+                    priceImpl: implInput ? implInput.value : '',
+                    sumImpl: sumImplCheck ? sumImplCheck.checked : true
                 };
             });
 
