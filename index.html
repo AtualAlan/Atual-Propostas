@@ -16,13 +16,37 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div style="background: var(--panel-bg); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 100; position: relative;">
-        <h2 style="color: white; margin: 0; font-size: 1.2rem;">Atual Sistemas - Gerador</h2>
-        <div style="display: flex; gap: 10px;">
-            <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Voltar ao Dashboard</a>
-        </div>
-    </div>
     <div class="app-container">
+        <!-- BARRA LATERAL (Global) -->
+        <div class="sidebar-menu" id="globalSidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-brand-text">Atual Sistemas</span>
+                <button class="sidebar-toggle-btn" id="btnToggleSidebar">☰</button>
+            </div>
+            
+            <a href="dashboard.html#analytics" class="menu-item" style="display: none;" id="menu-analytics-link">
+                <span>📊</span><span class="menu-item-text">Dashboard (BI)</span>
+            </a>
+            <a href="dashboard.html#kanban" class="menu-item">
+                <span>📋</span><span class="menu-item-text">Funil de Propostas</span>
+            </a>
+            
+            <div style="flex: 1;"></div>
+            
+            <a href="index.html" class="menu-item active" style="color: var(--primary-green); font-weight: 600;">
+                <span>+</span><span class="menu-item-text">Nova Proposta</span>
+            </a>
+            <a href="profile.html" class="menu-item">
+                <span>⚙️</span><span class="menu-item-text">Meu Perfil</span>
+            </a>
+            <a href="admin.html" class="menu-item" id="adminMenuLink" style="display: none; color: #ef4444;">
+                <span>🔒</span><span class="menu-item-text">Painel Admin</span>
+            </a>
+            <div class="menu-item" style="color: #ef4444; margin-top: 1rem; border-top: 1px solid var(--border-color);" onclick="logout()">
+                <span>🚪</span><span class="menu-item-text">Sair</span>
+            </div>
+        </div>
+
         <!-- Sidebar / Form Area -->
         <aside class="sidebar">
             <div class="logo-container">
@@ -132,9 +156,40 @@
         </main>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts Internos -->
     <script src="db-local.js"></script>
     <script src="template-proposta.js"></script>
     <script src="script.js"></script>
+    <script>
+        requireAuth();
+        
+        // Show Admin/Analytics links if authorized
+        const sessionInfo = getSession();
+        if (sessionInfo) {
+            if (sessionInfo.role === 'admin' || sessionInfo.role === 'dono_equipe') {
+                document.getElementById('menu-analytics-link').style.display = 'flex';
+            }
+            if (sessionInfo.role === 'admin') {
+                document.getElementById('adminMenuLink').style.display = 'flex';
+            }
+        }
+
+        // Lógica Global da Sidebar
+        const sidebar = document.getElementById('globalSidebar');
+        const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+        
+        if (localStorage.getItem('sidebarState') === 'collapsed') {
+            sidebar.classList.add('collapsed');
+        }
+        
+        btnToggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            if (sidebar.classList.contains('collapsed')) {
+                localStorage.setItem('sidebarState', 'collapsed');
+            } else {
+                localStorage.setItem('sidebarState', 'expanded');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -370,3 +370,18 @@ input:focus, select:focus {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-blue);
 }
+
+/* App Container & Sidebar Globals */
+.app-container { display: flex; height: 100vh; background-color: var(--bg-color); overflow: hidden; }
+.sidebar-menu { width: 250px; background-color: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 1.5rem 0; flex-shrink: 0; transition: width 0.3s ease; position: relative; }
+.sidebar-menu.collapsed { width: 70px; }
+.sidebar-brand { padding: 0 1.5rem 2rem 1.5rem; color: white; font-size: 1.2rem; font-weight: 700; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap; }
+.sidebar-menu.collapsed .sidebar-brand-text { display: none; }
+.menu-item { padding: 1rem 1.5rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 15px; text-decoration: none; border-left: 3px solid transparent; overflow: hidden; white-space: nowrap; }
+.menu-item:hover, .menu-item.active { background-color: rgba(255,255,255,0.05); color: var(--text-main); }
+.menu-item.active { border-left-color: var(--primary-green); }
+.sidebar-menu.collapsed .menu-item-text { display: none; }
+.main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+.sidebar-toggle-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
+.sidebar-toggle-btn:hover { color: var(--primary-green); }
+.sidebar-menu.collapsed .sidebar-toggle-btn { margin: 0 auto; }

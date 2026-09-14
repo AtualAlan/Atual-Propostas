@@ -10,51 +10,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
-        .app-container {
-            display: flex;
-            height: 100vh;
-            background-color: var(--bg-color);
-        }
-        .sidebar-menu {
-            width: 250px;
-            background-color: var(--panel-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
+        .view-section {
+            display: none;
+            padding: 2rem;
             flex-direction: column;
-            padding: 1.5rem 0;
-            flex-shrink: 0;
         }
-        .sidebar-brand {
-            padding: 0 1.5rem 2rem 1.5rem;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 700;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 1rem;
-        }
-        .menu-item {
-            padding: 1rem 1.5rem;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s;
+        .view-section.active {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            border-left: 3px solid transparent;
-        }
-        .menu-item:hover, .menu-item.active {
-            background-color: rgba(255,255,255,0.05);
-            color: var(--text-main);
-        }
-        .menu-item.active {
-            border-left-color: var(--primary-green);
-        }
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
         }
         .top-header {
             padding: 1rem 2rem;
@@ -274,31 +236,33 @@
     </div>
 
     <div class="app-container">
-        <!-- SIDEBAR -->
-        <div class="sidebar-menu">
-            <div class="sidebar-brand">Atual Sistemas</div>
-            
-            <div class="menu-item" id="btnMenuAnalytics" onclick="switchView('analytics')" style="display: none;">
-                📊 Dashboard (BI)
-            </div>
-            <div class="menu-item active" id="btnMenuKanban" onclick="switchView('kanban')">
-                📋 Funil de Propostas
+        <!-- BARRA LATERAL (Global) -->
+        <div class="sidebar-menu" id="globalSidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-brand-text">Atual Sistemas</span>
+                <button class="sidebar-toggle-btn" id="btnToggleSidebar">☰</button>
             </div>
             
-            <div style="flex: 1;"></div> <!-- Spacer -->
-
-            <a href="index.html" class="menu-item" style="color: var(--primary-green); font-weight: bold;">
-                + Nova Proposta
+            <a href="#" class="menu-item" onclick="switchView('analytics', this)" id="menu-analytics" style="display: none;">
+                <span>📊</span><span class="menu-item-text">Dashboard (BI)</span>
+            </a>
+            <a href="#" class="menu-item active" onclick="switchView('kanban', this)" id="menu-kanban">
+                <span>📋</span><span class="menu-item-text">Funil de Propostas</span>
             </a>
             
-            <a href="profile.html" class="menu-item">⚙️ Meu Perfil</a>
+            <div style="flex: 1;"></div>
             
-            <a href="admin.html" class="menu-item" id="btnMenuAdmin" style="display: none; color: #ef4444;">
-                🔒 Painel Admin <span id="dashPendingBadge" style="background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; margin-left: 5px; display: none;"></span>
+            <a href="index.html" class="menu-item" style="color: var(--primary-green); font-weight: 600;">
+                <span>+</span><span class="menu-item-text">Nova Proposta</span>
             </a>
-
-            <div class="menu-item" onclick="logout()" style="color: #ef4444;">
-                🚪 Sair
+            <a href="profile.html" class="menu-item">
+                <span>⚙️</span><span class="menu-item-text">Meu Perfil</span>
+            </a>
+            <a href="admin.html" class="menu-item" id="adminMenuLink" style="display: none; color: #ef4444;">
+                <span>🔒</span><span class="menu-item-text">Painel Admin <span id="dashPendingBadge" style="background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; margin-left: 5px; display: none;"></span></span>
+            </a>
+            <div class="menu-item" style="color: #ef4444; margin-top: 1rem; border-top: 1px solid var(--border-color);" onclick="logout()">
+                <span>🚪</span><span class="menu-item-text">Sair</span>
             </div>
         </div>
 
@@ -453,11 +417,11 @@
         document.getElementById('userNameDisplay').innerText = `Usuário logado: ${session.name} (${session.role})`;
         
         if (session.role === 'admin' || session.role === 'dono_equipe') {
-            document.getElementById('btnMenuAnalytics').style.display = 'flex';
+            document.getElementById('menu-analytics').style.display = 'flex';
             document.getElementById('filterSection').style.display = 'flex';
             
             if (session.role === 'admin') {
-                document.getElementById('btnMenuAdmin').style.display = 'flex';
+                document.getElementById('adminMenuLink').style.display = 'flex';
                 const pendingCount = getUsers().filter(u => u.status === 'pendente').length;
                 if (pendingCount > 0) {
                     const badge = document.getElementById('dashPendingBadge');
@@ -532,22 +496,29 @@
             });
         }
 
-        // View Switcher
-        const switchView = (viewName) => {
+        // View Switcher & Hash / Sidebar logic
+        const switchView = (viewId, element) => {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             
-            if(viewName === 'kanban') {
-                document.getElementById('view-kanban').classList.add('active');
-                document.getElementById('btnMenuKanban').classList.add('active');
-                document.getElementById('viewTitle').innerText = 'Funil de Propostas';
+            document.getElementById('view-' + viewId).classList.add('active');
+            if (element) {
+                element.classList.add('active');
             } else {
-                document.getElementById('view-analytics').classList.add('active');
-                document.getElementById('btnMenuAnalytics').classList.add('active');
-                document.getElementById('viewTitle').innerText = 'Dashboard Analítico (BI)';
+                const menuEl = document.getElementById('menu-' + viewId);
+                if(menuEl) menuEl.classList.add('active');
+            }
+            
+            // Persiste na URL
+            history.replaceState(null, null, '#' + viewId);
+            
+            document.getElementById('viewTitle').innerText = (viewId === 'kanban') ? 'Funil de Propostas' : 'Dashboard Analítico (BI)';
+
+            if (viewId === 'analytics') {
+                renderAnalytics(getProposals());
             }
             // Trigger chart resize if entering analytics
-            if(viewName === 'analytics' && chartInstanceTeams) {
+            if(viewId === 'analytics' && chartInstanceTeams) {
                 chartInstanceTeams.resize();
                 chartInstanceSellers.resize();
             }
@@ -1059,14 +1030,44 @@
             });
         });
 
+        // Lógica Global da Sidebar
+        const sidebar = document.getElementById('globalSidebar');
+        const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+        
+        if (localStorage.getItem('sidebarState') === 'collapsed') {
+            sidebar.classList.add('collapsed');
+        }
+        
+        btnToggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            if (sidebar.classList.contains('collapsed')) {
+                localStorage.setItem('sidebarState', 'collapsed');
+            } else {
+                localStorage.setItem('sidebarState', 'expanded');
+            }
+        });
+
         // Start
         updateData();
         
         // Define a view inicial
-        if (session.role === 'admin' || session.role === 'dono_equipe') {
-            switchView('analytics');
+        if (window.location.hash) {
+            const targetId = window.location.hash.substring(1);
+            if (document.getElementById('view-' + targetId)) {
+                switchView(targetId);
+            } else {
+                if (session.role === 'admin' || session.role === 'dono_equipe') {
+                    switchView('analytics');
+                } else {
+                    switchView('kanban');
+                }
+            }
         } else {
-            switchView('kanban');
+            if (session.role === 'admin' || session.role === 'dono_equipe') {
+                switchView('analytics');
+            } else {
+                switchView('kanban');
+            }
         }
     </script>
 </body>
