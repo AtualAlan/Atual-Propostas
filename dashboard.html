@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('theme')==='light') document.documentElement.setAttribute('data-theme', 'light');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - Atual Sistemas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        .app-container {
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-color);
+        }
+        .sidebar-menu {
+            width: 250px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0;
+            flex-shrink: 0;
+        }
+        .sidebar-brand {
+            padding: 0 1.5rem 2rem 1.5rem;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+        .menu-item {
+            padding: 1rem 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--text-main);
+        }
+        .menu-item.active {
+            border-left-color: var(--primary-green);
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .top-header {
+            padding: 1rem 2rem;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .view-section {
+            display: none;
+            padding: 2rem;
+            flex-direction: column;
+        }
+        .view-section.active {
+            display: flex;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .metric-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
+        .metric-value { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
+        .metric-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .chart-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        /* Kanban Customization */
+        .kanban-board {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+            min-height: 500px;
+            justify-content: flex-start; /* Changed to left to fit better in flexible area */
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+        .kanban-col {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 320px;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 100%;
+        }
+        .kanban-col-header {
+            padding: 1rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .kanban-col-content {
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .kanban-col-content.drag-over {
+            background: rgba(255,255,255,0.05);
+        }
+        .proposal-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+        .proposal-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .badge { display: inline-block; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-bottom: 10px; }
+        
+        /* Team Filter Cards */
+        .team-cards-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .team-filter-card {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .team-filter-card:hover {
+            border-color: var(--primary-green);
+            transform: translateY(-2px);
+        }
+        .team-filter-card.selected {
+            border-color: var(--primary-green);
+            background: rgba(0, 168, 134, 0.1);
+        }
+        .team-filter-title { font-weight: 700; font-size: 1.1rem; color: var(--text-main); margin-bottom: 5px; }
+        .team-filter-val { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.4); }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .modal-title {
+            color: #ef4444;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-form-group {
+            margin-bottom: 1.5rem;
+        }
+        .modal-form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .modal-form-group select, .modal-form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        .modal-form-group input {
+            margin-top: 10px;
+            display: none;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal de Motivo de Perda -->
+    <div class="modal-overlay" id="lostModalOverlay">
+        <div class="modal-content">
+            <h2 class="modal-title">🛑 Registrar Perda</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Para mover esta proposta para Perdidas, por favor informe o motivo do cliente não ter fechado negócio conosco.</p>
+            
+            <div class="modal-form-group">
+                <label>Motivo da Perda</label>
+                <select id="lostReasonSelect">
+                    <!-- Opções injetadas via JS -->
+                </select>
+                <input type="text" id="lostReasonCustom" placeholder="Descreva brevemente o motivo...">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btnLostCancel">Cancelar Movimentação</button>
+                <button class="btn btn-primary" id="btnLostConfirm" style="background: #ef4444; border-color: #ef4444; color: white;">Confirmar Perda</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar-menu">
+            <div class="sidebar-brand">Atual Sistemas</div>
+            
+            <div class="menu-item" id="btnMenuAnalytics" onclick="switchView('analytics')" style="display: none;">
+                📊 Dashboard (BI)
+            </div>
+            <div class="menu-item active" id="btnMenuKanban" onclick="switchView('kanban')">
+                📋 Funil de Propostas
+            </div>
+            
+            <div style="flex: 1;"></div> <!-- Spacer -->
+
+            <a href="index.html" class="menu-item" style="color: var(--primary-green); font-weight: bold;">
+                + Nova Proposta
+            </a>
+            
+            <a href="profile.html" class="menu-item">⚙️ Meu Perfil</a>
+            
+            <a href="admin.html" class="menu-item" id="btnMenuAdmin" style="display: none; color: #ef4444;">
+                🔒 Painel Admin <span id="dashPendingBadge" style="background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; margin-left: 5px; display: none;"></span>
+            </a>
+
+            <div class="menu-item" onclick="logout()" style="color: #ef4444;">
+                🚪 Sair
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="top-header">
+                <div>
+                    <h2 style="margin:0; font-size: 1.2rem;" id="viewTitle">Funil de Propostas</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-muted);" id="userNameDisplay"></p>
+                </div>
+                
+                <!-- Filtros Globais (Aparecem em ambas as views para admin/gerente) -->
+                <div id="filterSection" style="display: none; gap: 15px; align-items: center;">
+                    <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Vendedor:</div>
+                    <select id="userFilter" class="btn btn-secondary" style="background: var(--input-bg); border-color: var(--border-color); color: var(--text-main); font-size: 0.9rem; padding: 6px 12px; cursor: pointer;">
+                        <option value="">Todos os Vendedores</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- TEAM CARDS (Filtro Global Interativo) -->
+            <div id="globalTeamCards" class="team-cards-container" style="display: none; padding: 1.5rem 2rem 0 2rem; margin-bottom: 0;"></div>
+
+            <!-- VIEW: KANBAN -->
+            <div id="view-kanban" class="view-section active">
+                <div style="display: flex; gap: 15px; margin-bottom: 2rem; flex-shrink: 0;">
+                    <div style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Total Implantação (Kanban)</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);" id="kbImplTotal">R$ 0,00</div>
+                    </div>
+                    <div style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Total Mensalidade (Kanban)</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);" id="kbMensTotal">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <div class="kanban-board" id="kanbanBoard">
+                    <div class="kanban-col" data-status="rascunho">
+                        <div class="kanban-col-header" style="border-top: 4px solid #94a3b8; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Rascunhos</span> <span class="badge" id="count-rascunho" style="margin:0;">0</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
+                                Impl: <span id="val-impl-rascunho">R$ 0,00</span> | Mens: <span id="val-mens-rascunho">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <div class="kanban-col-content" id="col-rascunho" data-status="rascunho"></div>
+                    </div>
+                    <div class="kanban-col" data-status="enviada">
+                        <div class="kanban-col-header" style="border-top: 4px solid #3b82f6; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Enviadas</span> <span class="badge" id="count-enviada" style="margin:0;">0</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
+                                Impl: <span id="val-impl-enviada">R$ 0,00</span> | Mens: <span id="val-mens-enviada">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <div class="kanban-col-content" id="col-enviada" data-status="enviada"></div>
+                    </div>
+                    <div class="kanban-col" data-status="aprovada">
+                        <div class="kanban-col-header" style="border-top: 4px solid #10b981; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Aprovadas</span> <span class="badge" id="count-aprovada" style="margin:0;">0</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
+                                Impl: <span id="val-impl-aprovada">R$ 0,00</span> | Mens: <span id="val-mens-aprovada">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <div class="kanban-col-content" id="col-aprovada" data-status="aprovada"></div>
+                    </div>
+                    <div class="kanban-col" data-status="perdida">
+                        <div class="kanban-col-header" style="border-top: 4px solid #ef4444; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Perdidas</span> <span class="badge" id="count-perdida" style="margin:0;">0</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
+                                Impl: <span id="val-impl-perdida">R$ 0,00</span> | Mens: <span id="val-mens-perdida">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <div class="kanban-col-content" id="col-perdida" data-status="perdida"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: ANALYTICS (BI) -->
+            <div id="view-analytics" class="view-section">
+                <!-- KPIs -->
+                <div class="metrics-grid">
+                    <div class="metric-card" style="border-bottom: 4px solid #10b981;">
+                        <div class="metric-title">Fechamento do Mês (Aprovadas)</div>
+                        <div class="metric-value" id="biMensalidadeMes" style="color: #10b981;">R$ 0,00</div>
+                        <div class="metric-sub" id="biImplantacaoMes">Implantação: R$ 0,00</div>
+                    </div>
+                    <div class="metric-card" style="border-bottom: 4px solid #3b82f6;">
+                        <div class="metric-title">Pipeline Ativo (Mensalidade Enviada)</div>
+                        <div class="metric-value" id="biPipelineMensal" style="color: #3b82f6;">R$ 0,00</div>
+                        <div class="metric-sub">Negócios na mesa no momento</div>
+                    </div>
+                    <div class="metric-card" style="border-bottom: 4px solid var(--border-color);">
+                        <div class="metric-title">Total Geral Histórico (Receita)</div>
+                        <div class="metric-value" id="biTotalGeral">R$ 0,00</div>
+                        <div class="metric-sub">Soma acumulada (Mens + Impl) de aprovadas</div>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                    <div class="chart-card">
+                        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem;">Desempenho por Equipe</h3>
+                        <canvas id="chartTeams"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem;">Desempenho por Vendedor</h3>
+                        <canvas id="chartSellers"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem;">Motivos de Perda (Receita Perdida)</h3>
+                        <canvas id="chartLostReasons"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="db-local.js"></script>
+    <script>
+        const session = requireAuth();
+        let chartInstanceTeams = null;
+        let chartInstanceSellers = null;
+        let chartInstanceLost = null;
+        let globalSelectedTeams = [];
+        let visibleTeams = [];
+        let visibleUsers = [];
+
+        const parseCurrency = (val) => {
+            if(!val) return 0;
+            if(typeof val === 'number') return val;
+            let clean = val.replace(/[R$\s]/g, '');
+            if (clean.includes(',') && clean.includes('.')) {
+                clean = clean.replace(/\./g, '').replace(',', '.');
+            } else if (clean.includes(',')) {
+                clean = clean.replace(',', '.');
+            }
+            return parseFloat(clean) || 0;
+        };
+
+        const formatCurrency = (val) => {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        };
+        
+        // Setup initial UI
+        document.getElementById('userNameDisplay').innerText = `Usuário logado: ${session.name} (${session.role})`;
+        
+        if (session.role === 'admin' || session.role === 'dono_equipe') {
+            document.getElementById('btnMenuAnalytics').style.display = 'flex';
+            document.getElementById('filterSection').style.display = 'flex';
+            
+            if (session.role === 'admin') {
+                document.getElementById('btnMenuAdmin').style.display = 'flex';
+                const pendingCount = getUsers().filter(u => u.status === 'pendente').length;
+                if (pendingCount > 0) {
+                    const badge = document.getElementById('dashPendingBadge');
+                    badge.innerText = pendingCount;
+                    badge.style.display = 'inline-block';
+                }
+            }
+
+            // Populate filters
+            const teams = getTeams();
+            const users = getUsers().filter(u => u.status === 'aprovado');
+            visibleTeams = teams;
+            visibleUsers = users;
+            
+            if (session.role === 'dono_equipe') {
+                visibleTeams = teams.filter(t => session.teamIds.includes(t.id));
+                visibleUsers = users.filter(u => u.teamIds && u.teamIds.some(tid => session.teamIds.includes(tid)));
+            }
+            
+            // Configura Filtro de Usuário
+            const userSelect = document.getElementById('userFilter');
+            visibleUsers.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.name;
+                userSelect.appendChild(opt);
+            });
+            userSelect.addEventListener('change', () => { updateData(); });
+
+            // Configura Filtro de Equipes (Cards)
+            const teamCardsContainer = document.getElementById('globalTeamCards');
+            teamCardsContainer.style.display = 'flex';
+            
+            const allProps = getProposals();
+            
+            visibleTeams.forEach(t => {
+                // Calcula os totais dessa equipe
+                const teamUsers = visibleUsers.filter(u => u.teamIds && u.teamIds.includes(t.id)).map(u => u.id);
+                const teamProps = allProps.filter(p => teamUsers.includes(p.sellerId));
+                
+                let tImpl = 0;
+                let tMens = 0;
+                teamProps.forEach(p => {
+                    if (p.status !== 'perdida') {
+                        tImpl += parseCurrency(p.data.implCost);
+                        tMens += parseCurrency(p.data.monthlyFee);
+                    }
+                });
+
+                const card = document.createElement('div');
+                card.className = 'team-filter-card';
+                if (globalSelectedTeams.includes(t.id)) card.classList.add('selected');
+                card.innerHTML = `
+                    <div class="team-filter-title">${t.name}</div>
+                    <div class="team-filter-val" id="tcard-mens-${t.id}" style="color: #3b82f6;">Mens: ${formatCurrency(tMens)}</div>
+                    <div class="team-filter-val" id="tcard-impl-${t.id}" style="color: #10b981;">Impl: ${formatCurrency(tImpl)}</div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    const idx = globalSelectedTeams.indexOf(t.id);
+                    if (idx > -1) {
+                        globalSelectedTeams.splice(idx, 1);
+                        card.classList.remove('selected');
+                    } else {
+                        globalSelectedTeams.push(t.id);
+                        card.classList.add('selected');
+                    }
+                    updateData();
+                });
+
+                teamCardsContainer.appendChild(card);
+            });
+        }
+
+        // View Switcher
+        const switchView = (viewName) => {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            
+            if(viewName === 'kanban') {
+                document.getElementById('view-kanban').classList.add('active');
+                document.getElementById('btnMenuKanban').classList.add('active');
+                document.getElementById('viewTitle').innerText = 'Funil de Propostas';
+            } else {
+                document.getElementById('view-analytics').classList.add('active');
+                document.getElementById('btnMenuAnalytics').classList.add('active');
+                document.getElementById('viewTitle').innerText = 'Dashboard Analítico (BI)';
+            }
+            // Trigger chart resize if entering analytics
+            if(viewName === 'analytics' && chartInstanceTeams) {
+                chartInstanceTeams.resize();
+                chartInstanceSellers.resize();
+            }
+        };
+
+
+
+        const getFilteredProposals = () => {
+            let proposals = getProposals();
+            
+            // Filtro Global de Equipes (Múltipla Seleção)
+            if (globalSelectedTeams.length > 0 && document.getElementById('globalTeamCards').style.display !== 'none') {
+                const usersInSelectedTeams = getUsers().filter(u => u.teamIds && u.teamIds.some(tid => globalSelectedTeams.includes(tid))).map(u => u.id);
+                proposals = proposals.filter(p => usersInSelectedTeams.includes(p.sellerId));
+            }
+            
+            // Filtro de Vendedor
+            const userSelect = document.getElementById('userFilter');
+            if (userSelect && userSelect.value && document.getElementById('filterSection').style.display !== 'none') {
+                proposals = proposals.filter(p => p.sellerId === userSelect.value);
+            }
+            
+            return proposals;
+        };
+
+        const deleteProp = (id) => {
+            if(confirm("Tem certeza que deseja excluir esta proposta? Esta ação não pode ser desfeita.")) {
+                try {
+                    deleteProposal(id);
+                    updateData();
+                } catch(e) {
+                    alert(e.message);
+                }
+            }
+        };
+
+        const updateData = () => {
+            const proposals = getFilteredProposals();
+            renderKanban(proposals);
+            if (session.role === 'admin' || session.role === 'dono_equipe') {
+                renderAnalytics(proposals);
+                updateTeamCardTotals();
+            }
+        };
+
+        const updateTeamCardTotals = () => {
+            const allProps = getProposals();
+            visibleTeams.forEach(t => {
+                const teamUsers = visibleUsers.filter(u => u.teamIds && u.teamIds.includes(t.id)).map(u => u.id);
+                const teamProps = allProps.filter(p => teamUsers.includes(p.sellerId));
+                let tImpl = 0, tMens = 0;
+                teamProps.forEach(p => {
+                    if (p.status !== 'perdida') {
+                        tImpl += parseCurrency(p.data.implCost);
+                        tMens += parseCurrency(p.data.monthlyFee);
+                    }
+                });
+                const elMens = document.getElementById(`tcard-mens-${t.id}`);
+                const elImpl = document.getElementById(`tcard-impl-${t.id}`);
+                if (elMens) elMens.innerText = `Mens: ${formatCurrency(tMens)}`;
+                if (elImpl) elImpl.innerText = `Impl: ${formatCurrency(tImpl)}`;
+            });
+        };
+
+        const renderKanban = (proposals) => {
+            const allUsers = getUsers();
+            const allTeams = getTeams();
+
+            const cols = {
+                'rascunho': document.getElementById('col-rascunho'),
+                'enviada': document.getElementById('col-enviada'),
+                'aprovada': document.getElementById('col-aprovada'),
+                'perdida': document.getElementById('col-perdida')
+            };
+
+            const counts = { 'rascunho': 0, 'enviada': 0, 'aprovada': 0, 'perdida': 0 };
+            const totals = {
+                'rascunho': { impl: 0, mens: 0 },
+                'enviada': { impl: 0, mens: 0 },
+                'aprovada': { impl: 0, mens: 0 },
+                'perdida': { impl: 0, mens: 0 }
+            };
+
+            let kbImpl = 0;
+            let kbMens = 0;
+
+            Object.values(cols).forEach(col => col.innerHTML = '');
+            
+            // Clone and sort
+            const sorted = [...proposals].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const colors = {
+                'rascunho': '#94a3b8',
+                'enviada': '#3b82f6',
+                'aprovada': '#10b981',
+                'perdida': '#ef4444'
+            };
+
+            sorted.forEach(p => {
+                const status = p.status || 'rascunho';
+                const col = cols[status];
+                if(col) {
+                    counts[status]++;
+                    
+                    const implVal = parseCurrency(p.data.implCost);
+                    const mensVal = parseCurrency(p.data.monthlyFee);
+                    
+                    totals[status].impl += implVal;
+                    totals[status].mens += mensVal;
+                    
+                    if (status !== 'perdida') {
+                        kbImpl += implVal;
+                        kbMens += mensVal;
+                    }
+
+                    const date = new Date(p.date).toLocaleDateString('pt-BR');
+                    
+                    // Busca Equipe
+                    let teamName = "Sem Equipe";
+                    const sellerUser = allUsers.find(u => u.id === p.sellerId);
+                    if (sellerUser && sellerUser.teamIds && sellerUser.teamIds.length > 0) {
+                        const team = allTeams.find(t => t.id === sellerUser.teamIds[0]);
+                        if (team) teamName = team.name;
+                    }
+                    
+                    const div = document.createElement('div');
+                    div.className = 'proposal-card';
+                    div.style.borderLeftColor = colors[status];
+                    div.draggable = true;
+                    div.dataset.id = p.id;
+                    
+                    div.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                            <div class="badge">${p.data.segmentLabel || 'Geral'}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; line-height: 1.3;">
+                                👤 <strong>${p.sellerName}</strong><br>
+                                🏢 ${teamName}
+                            </div>
+                        </div>
+                        <div class="prop-client" style="margin-top: 5px;">${p.data.clientName}</div>
+                        <div class="prop-details">
+                            <div><strong>Contato:</strong> ${p.data.contactName}</div>
+                            <div><strong>Data:</strong> ${date}</div>
+                        </div>
+                        <div class="prop-price" style="font-size: 0.85rem; line-height: 1.4; display: flex; flex-direction: column; align-items: flex-end;">
+                            <span style="color: #3b82f6;">Mensalidade: <strong>${formatCurrency(mensVal)}</strong></span>
+                            <span style="color: #10b981;">Implantação: <strong>${formatCurrency(implVal)}</strong></span>
+                        </div>
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 0.9rem;" onclick="window.location.href='index.html?load=${p.id}'">Abrir</button>
+                            <button class="btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px 12px; border-radius: 6px; cursor: pointer;" onclick="deleteProp('${p.id}')">❌</button>
+                        </div>
+                    `;
+                    
+                    div.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', p.id);
+                        setTimeout(() => {
+                            div.style.opacity = '0.5';
+                            div.style.pointerEvents = 'none'; // Prevent drop target interference
+                        }, 0);
+                    });
+                    div.addEventListener('dragend', () => {
+                        div.style.opacity = '1';
+                        div.style.pointerEvents = 'auto';
+                    });
+                    col.appendChild(div);
+                }
+            });
+
+            // Update DOM headers
+            Object.keys(counts).forEach(k => document.getElementById(`count-${k}`).innerText = counts[k]);
+            Object.keys(totals).forEach(k => {
+                document.getElementById(`val-impl-${k}`).innerText = formatCurrency(totals[k].impl);
+                document.getElementById(`val-mens-${k}`).innerText = formatCurrency(totals[k].mens);
+            });
+            document.getElementById('kbImplTotal').innerText = formatCurrency(kbImpl);
+            document.getElementById('kbMensTotal').innerText = formatCurrency(kbMens);
+        };
+        
+        const renderAnalytics = (proposals) => {
+            const allUsers = getUsers();
+            const allTeams = getTeams();
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            // 1. Calculate Metric Cards
+            let aprovadaMensMes = 0;
+            let aprovadaImplMes = 0;
+            let pipelineMens = 0;
+            let histTotal = 0;
+            
+            const lostReasonsData = {};
+
+            proposals.forEach(p => {
+                const implVal = parseCurrency(p.data.implCost);
+                const mensVal = parseCurrency(p.data.monthlyFee);
+                const total = implVal + mensVal;
+                const pDate = new Date(p.date);
+                
+                if (p.status === 'aprovada') {
+                    histTotal += total;
+                    if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
+                        aprovadaMensMes += mensVal;
+                        aprovadaImplMes += implVal;
+                    }
+                } else if (p.status === 'enviada') {
+                    pipelineMens += mensVal;
+                } else if (p.status === 'perdida') {
+                    let reason = p.data.lostReason || 'Não informado';
+                    const knownReasons = getLostReasons();
+                    if (!knownReasons.includes(reason) && reason !== 'Não informado') {
+                        reason = 'Outros';
+                    }
+                    if (!lostReasonsData[reason]) lostReasonsData[reason] = 0;
+                    lostReasonsData[reason] += total;
+                }
+            });
+
+            document.getElementById('biMensalidadeMes').innerText = formatCurrency(aprovadaMensMes) + ' /mês';
+            document.getElementById('biImplantacaoMes').innerText = `Implantação: ${formatCurrency(aprovadaImplMes)}`;
+            document.getElementById('biPipelineMensal').innerText = formatCurrency(pipelineMens) + ' /mês';
+            document.getElementById('biTotalGeral').innerText = formatCurrency(histTotal);
+
+            // 2. Data for Charts
+            const teamData = {};
+            const sellerData = {};
+
+            proposals.forEach(p => {
+                if (p.status !== 'aprovada' && p.status !== 'enviada') return;
+
+                const impl = parseCurrency(p.data.implCost);
+                const mens = parseCurrency(p.data.monthlyFee);
+                const total = impl + mens;
+                const isFechado = p.status === 'aprovada';
+
+                // Seller Aggregation
+                if(!sellerData[p.sellerName]) sellerData[p.sellerName] = { fechado: 0, aberto: 0 };
+                if (isFechado) sellerData[p.sellerName].fechado += total;
+                else sellerData[p.sellerName].aberto += total;
+
+                // Team Aggregation
+                const sUser = allUsers.find(u => u.id === p.sellerId);
+                let assignedTeams = [];
+                if (sUser && sUser.teamIds && sUser.teamIds.length > 0) {
+                    sUser.teamIds.forEach(tid => {
+                        const tInfo = allTeams.find(t => t.id === tid);
+                        if(tInfo) assignedTeams.push(tInfo.name);
+                    });
+                }
+                if(assignedTeams.length === 0) assignedTeams.push('Sem Equipe');
+
+                assignedTeams.forEach(tName => {
+                    if(!teamData[tName]) teamData[tName] = { fechado: 0, aberto: 0 };
+                    if (isFechado) teamData[tName].fechado += total;
+                    else teamData[tName].aberto += total;
+                });
+            });
+
+            const teamLabels = Object.keys(teamData);
+            const teamFechado = teamLabels.map(k => teamData[k].fechado);
+            const teamAberto = teamLabels.map(k => teamData[k].aberto);
+            
+            const sellerLabels = Object.keys(sellerData);
+            const sellerFechado = sellerLabels.map(k => sellerData[k].fechado);
+            const sellerAberto = sellerLabels.map(k => sellerData[k].aberto);
+
+            // Chart Configuration
+            const chartConfig = { color: '#9ca3af', gridColor: '#3b4952' };
+
+            if(chartInstanceTeams) chartInstanceTeams.destroy();
+            const ctxT = document.getElementById('chartTeams').getContext('2d');
+            chartInstanceTeams = new Chart(ctxT, {
+                type: 'bar',
+                data: {
+                    labels: teamLabels.length ? teamLabels : ['Nenhum Dado'],
+                    datasets: [
+                        {
+                            label: 'Fechado (Aprovadas)',
+                            data: teamLabels.length ? teamFechado : [0],
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Em Aberto (Enviadas)',
+                            data: teamLabels.length ? teamAberto : [0],
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { stacked: true, ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } },
+                        x: { stacked: true, ticks: { color: chartConfig.color }, grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: chartConfig.color } }
+                    }
+                }
+            });
+
+            if(chartInstanceSellers) chartInstanceSellers.destroy();
+            const ctxS = document.getElementById('chartSellers').getContext('2d');
+            chartInstanceSellers = new Chart(ctxS, {
+                type: 'bar',
+                data: {
+                    labels: sellerLabels.length ? sellerLabels : ['Nenhum Dado'],
+                    datasets: [
+                        {
+                            label: 'Fechado (Aprovadas)',
+                            data: sellerLabels.length ? sellerFechado : [0],
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Em Aberto (Enviadas)',
+                            data: sellerLabels.length ? sellerAberto : [0],
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { stacked: true, ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } },
+                        x: { stacked: true, ticks: { color: chartConfig.color }, grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: chartConfig.color } }
+                    }
+                }
+            });
+
+            // Gráfico de Motivos de Perda
+            const lostLabels = Object.keys(lostReasonsData);
+            const lostValues = Object.values(lostReasonsData);
+
+            if(chartInstanceLost) chartInstanceLost.destroy();
+            const ctxL = document.getElementById('chartLostReasons').getContext('2d');
+            chartInstanceLost = new Chart(ctxL, {
+                type: 'doughnut',
+                data: {
+                    labels: lostLabels.length ? lostLabels : ['Nenhuma Perda'],
+                    datasets: [{
+                        data: lostLabels.length ? lostValues : [1],
+                        backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: chartConfig.color } },
+                        tooltip: { callbacks: { label: (ctx) => ' ' + formatCurrency(lostLabels.length ? Number(ctx.raw) : 0) } }
+                    }
+                }
+            });
+        };
+
+        // Lost Modal Logic
+        let pendingLostProposalId = null;
+        const lostModal = document.getElementById('lostModalOverlay');
+        const lostSelect = document.getElementById('lostReasonSelect');
+        const lostCustom = document.getElementById('lostReasonCustom');
+        const btnLostConfirm = document.getElementById('btnLostConfirm');
+        const btnLostCancel = document.getElementById('btnLostCancel');
+
+        const populateLostReasons = () => {
+            const reasons = getLostReasons();
+            lostSelect.innerHTML = reasons.map(r => `<option value="${r}">${r}</option>`).join('');
+            if (!reasons.includes("Outros")) {
+                lostSelect.innerHTML += `<option value="Outros">Outros</option>`;
+            }
+            lostCustom.style.display = lostSelect.value === 'Outros' ? 'block' : 'none';
+        };
+
+        lostSelect.addEventListener('change', () => {
+            lostCustom.style.display = lostSelect.value === 'Outros' ? 'block' : 'none';
+        });
+
+        btnLostCancel.addEventListener('click', () => {
+            pendingLostProposalId = null;
+            lostModal.style.display = 'none';
+            lostCustom.value = '';
+            updateData(); // Re-render to put the card back
+        });
+
+        btnLostConfirm.addEventListener('click', () => {
+            if (!pendingLostProposalId) return;
+            
+            let finalReason = lostSelect.value;
+            if (finalReason === 'Outros') {
+                finalReason = lostCustom.value.trim();
+                if (!finalReason) {
+                    alert("Por favor, descreva o motivo da perda.");
+                    return;
+                }
+            }
+            
+            try {
+                updateProposalStatus(pendingLostProposalId, 'perdida', finalReason);
+                lostModal.style.display = 'none';
+                pendingLostProposalId = null;
+                lostCustom.value = '';
+                updateData();
+            } catch(err) {
+                alert(err.message);
+            }
+        });
+
+        // Initialize Kanban Drag & Drop
+        document.querySelectorAll('.kanban-col').forEach(col => {
+            col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+            col.addEventListener('dragleave', e => col.classList.remove('drag-over'));
+            col.addEventListener('drop', e => {
+                e.preventDefault();
+                col.classList.remove('drag-over');
+                const id = e.dataTransfer.getData('text/plain');
+                const newStatus = col.dataset.status;
+                if (id && newStatus) {
+                    if (newStatus === 'perdida') {
+                        pendingLostProposalId = id;
+                        populateLostReasons();
+                        lostModal.style.display = 'flex';
+                    } else {
+                        try {
+                            updateProposalStatus(id, newStatus);
+                            updateData();
+                        } catch(err) {
+                            alert(err.message);
+                        }
+                    }
+                }
+            });
+        });
+
+        // Start
+        updateData();
+        
+        // Define a view inicial
+        if (session.role === 'admin' || session.role === 'dono_equipe') {
+            switchView('analytics');
+        } else {
+            switchView('kanban');
+        }
+    </script>
+</body>
+</html>

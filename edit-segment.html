@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('theme')==='light') document.documentElement.setAttribute('data-theme', 'light');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Segmento - Atual Sistemas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header" style="background: var(--panel-bg); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+        <h2 style="color: white; margin: 0; font-size: 1.2rem;">Editar Segmento</h2>
+        <a href="admin.html#tab-settings" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Voltar ao Painel</a>
+    </div>
+
+    <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+        <div style="background: var(--panel-bg); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>ID Interno (Não Editável)</label>
+                    <input type="text" id="segId" disabled style="background: var(--bg-main);">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>Nome do Segmento</label>
+                    <input type="text" id="segName">
+                </div>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="margin: 0;">Argumentos / Diferenciais</label>
+                    <button type="button" class="btn btn-secondary" id="btnAddArgument" style="padding: 4px 8px; font-size: 0.8rem;">+ Adicionar Argumento</button>
+                </div>
+                <div id="segArgumentsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Argumentos dinâmicos -->
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ferramentas Padrão do Segmento</label>
+                <div class="custom-dropdown" style="position: relative;">
+                    <button type="button" class="btn" id="dropdownBtnSeg" style="width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main);">
+                        <span>Selecione as Ferramentas...</span>
+                        <span style="font-size: 0.8rem;">▼</span>
+                    </button>
+                    <div id="segToolsContainer" class="dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel-bg); border: 1px solid var(--primary-blue); border-radius: 6px; padding: 15px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.5); max-height: 250px; overflow-y: auto; flex-direction: column; gap: 10px;">
+                        <!-- Checkboxes injetados aqui -->
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: right; margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="window.location.href='admin.html#tab-settings'" style="margin-right: 10px;">Cancelar</button>
+                <button class="btn btn-primary" id="btnSave">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db-local.js"></script>
+    <script>
+        requireAdmin();
+        
+        const params = new URLSearchParams(window.location.search);
+        const segId = params.get('id');
+        
+        if (!segId) {
+            alert("Segmento não encontrado!");
+            window.location.href = 'admin.html#tab-settings';
+        }
+
+        const segments = getSegments();
+        const tools = getTools();
+        const seg = segments.find(s => s.id === segId);
+        
+        if (!seg) {
+            alert("Segmento não encontrado no banco de dados!");
+            window.location.href = 'admin.html#tab-settings';
+        }
+
+        // Renderiza ferramentas
+        const container = document.getElementById('segToolsContainer');
+        container.innerHTML = tools.map(t => `
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
+                <input type="checkbox" class="seg-tool" value="${t.id}" ${seg.defaultTools.includes(t.id) ? 'checked' : ''}> 
+                ${t.name}
+            </label>
+        `).join('');
+
+        // Dropdown Logic
+        document.getElementById('dropdownBtnSeg').addEventListener('click', (e) => {
+            const menu = document.getElementById('segToolsContainer');
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-dropdown')) {
+                document.getElementById('segToolsContainer').style.display = 'none';
+            }
+        });
+
+        // Popula form
+        document.getElementById('segId').value = seg.id;
+        document.getElementById('segName').value = seg.name;
+
+        const segArgumentsContainer = document.getElementById('segArgumentsContainer');
+        const btnAddArgument = document.getElementById('btnAddArgument');
+
+        const createArgumentRow = (title = '', text = '', image = '', link = '') => {
+            const div = document.createElement('div');
+            div.className = 'arg-row';
+            div.style.cssText = "display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); position: relative;";
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <input type="text" class="arg-title" placeholder="Título do Argumento (ex: Controle de Estoque)" value="${title}" style="flex: 1; border: none; background: transparent; color: var(--text-main); font-weight: 600; font-size: 1rem; border-bottom: 1px solid var(--border-color); border-radius: 0; padding: 4px 0;">
+                    <button type="button" class="btn-remove-arg" style="background: transparent; color: #ef4444; border: none; cursor: pointer; font-size: 1.2rem; margin-left: 10px;" title="Remover">&times;</button>
+                </div>
+                <textarea class="arg-text" rows="3" placeholder="Descreva os diferenciais..." style="width:100%; border:none; background:transparent; color:var(--text-main); resize: vertical; padding: 4px 0;">${text}</textarea>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" class="arg-image" placeholder="URL da Imagem (Opcional)" value="${image || ''}" style="flex: 1; padding: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-main);">
+                    <input type="text" class="arg-link" placeholder="Link Saiba Mais (Opcional)" value="${link || ''}" style="flex: 1; padding: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-main);">
+                </div>
+            `;
+            div.querySelector('.btn-remove-arg').addEventListener('click', () => div.remove());
+            return div;
+        };
+
+        if (Array.isArray(seg.features)) {
+            seg.features.forEach(f => {
+                segArgumentsContainer.appendChild(createArgumentRow(f.title, f.text, f.image, f.link));
+            });
+        }
+        
+        btnAddArgument.addEventListener('click', () => {
+            segArgumentsContainer.appendChild(createArgumentRow());
+        });
+
+        document.getElementById('btnSave').addEventListener('click', () => {
+            const name = document.getElementById('segName').value.trim();
+            const argRows = document.querySelectorAll('.arg-row');
+            const features = [];
+            argRows.forEach(row => {
+                const title = row.querySelector('.arg-title').value.trim();
+                const text = row.querySelector('.arg-text').value.trim();
+                const image = row.querySelector('.arg-image').value.trim();
+                const link = row.querySelector('.arg-link').value.trim();
+                if (title || text) features.push({ title, text, image, link });
+            });
+            const checkboxes = document.querySelectorAll('.seg-tool:checked');
+            const defaultTools = Array.from(checkboxes).map(cb => cb.value);
+            
+            if(!name) return alert("Nome é obrigatório.");
+            
+            try {
+                updateSegment(seg.id, name, features, defaultTools);
+                window.location.href = 'admin.html#tab-settings';
+            } catch(e) {
+                alert(e.message);
+            }
+        });
+    </script>
+</body>
+</html>

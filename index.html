@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atual Sistemas - Gerador de Propostas</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- PDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div style="background: var(--panel-bg); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 100; position: relative;">
+        <h2 style="color: white; margin: 0; font-size: 1.2rem;">Atual Sistemas - Gerador</h2>
+        <div style="display: flex; gap: 10px;">
+            <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Voltar ao Dashboard</a>
+        </div>
+    </div>
+    <div class="app-container">
+        <!-- Sidebar / Form Area -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <img src="https://www.atualsistemas.com.br/wp-content/uploads/2021/03/LOGO_BRANCA_HORIZONTAL_SITE.png" alt="Atual Sistemas Logo" class="brand-logo">
+                <h2>Gerador de Propostas</h2>
+            </div>
+
+            <form id="proposal-form" class="form-container">
+                <div class="form-section">
+                    <h3>Dados do Cliente</h3>
+                    <div class="form-group">
+                        <label for="clientName">Nome da Empresa</label>
+                        <input type="text" id="clientName" placeholder="Ex: Supermercado XYZ" value="Supermercado de Teste LTDA" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="clientCNPJ">CNPJ</label>
+                        <input type="text" id="clientCNPJ" placeholder="Ex: 00.000.000/0001-00" value="12.345.678/0001-90" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactName">A/C (Nome do Contato)</label>
+                        <input type="text" id="contactName" placeholder="Ex: João da Silva" value="Sr. Roberto Silva">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Parâmetros Comerciais</h3>
+                    
+                    <div class="form-row" style="margin-bottom: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="calcPerc">Percentual do Salário Mínimo (%)</label>
+                            <input type="text" id="calcPerc" placeholder="Ex: 20 (Para 20%)">
+                            <small style="color: var(--text-muted); margin-top: 5px; font-size: 11px;">Base S.M. Atual: R$ 1.621,00. Atualiza automaticamente a Mensalidade.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="implCost">Valor de Implantação (R$)</label>
+                            <input type="text" id="implCost" placeholder="Ex: 1500,00" value="2500,00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="monthlyFee">Mensalidade (R$)</label>
+                            <input type="text" id="monthlyFee" placeholder="0,00" value="390,00" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="implTime">Tempo de Implantação</label>
+                            <input type="text" id="implTime" placeholder="Ex: 30 dias" value="25 Dias Úteis" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="migratedSystem">Sistema Atual (Concorrente)</label>
+                            <input type="text" id="migratedSystem" placeholder="Ex: Hiper, Alterdata..." value="Hiper" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="checkbox-label" style="width: fit-content; background: transparent; padding: 0;">
+                            <input type="checkbox" id="hasMigration" checked> Haverá Migração de Dados
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Segmento & Inteligência</h3>
+                    <div class="form-group">
+                        <label for="segment">Segmento do Cliente</label>
+                        <select id="segment" required>
+                            <!-- Dinâmico via JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ferramentas & Módulos Inclusos</label>
+                        <div class="checkbox-grid" id="toolsGrid">
+                            <!-- Dinâmico via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" id="btnPreview" style="flex: 1 1 100%; border: 1px solid transparent;">Pré-visualizar Proposta</button>
+                    <button type="button" class="btn btn-secondary" id="btnSave" style="flex: 1 1 100%; border: 1px solid var(--primary-green); color: var(--primary-green);">Salvar no Kanban</button>
+                    <div style="flex: 1 1 100%; display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" id="btnExportHtml" style="flex: 1;" disabled>Baixar HTML (Mobile)</button>
+                        <button type="button" class="btn btn-secondary" id="btnExportPdf" style="flex: 1;" disabled>Baixar PDF</button>
+                    </div>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Preview Area -->
+        <main class="preview-area">
+            <div class="preview-header">
+                <h3>Visualização da Proposta</h3>
+                <div class="preview-actions">
+                    <button id="toggleMobileView" class="btn-icon" title="Ver como Mobile">📱</button>
+                    <button id="toggleDesktopView" class="btn-icon active" title="Ver como Desktop">💻</button>
+                </div>
+            </div>
+            <div class="preview-container desktop-view" id="previewContainer">
+                <div class="empty-state">
+                    <p>Preencha os dados e clique em "Pré-visualizar Proposta" para ver o resultado aqui.</p>
+                </div>
+                <!-- The generated HTML will be injected here -->
+                <div id="proposalOutput"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="db-local.js"></script>
+    <script src="template-proposta.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

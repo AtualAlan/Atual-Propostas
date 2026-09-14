@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('theme')==='light') document.documentElement.setAttribute('data-theme', 'light');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Atual Sistemas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--bg-color);
+        }
+        .auth-container {
+            background: var(--panel-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .auth-container h2 {
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+        .auth-container p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        .error-msg {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .success-msg {
+            color: var(--primary-green);
+            background: rgba(0, 168, 134, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .toggle-link {
+            color: var(--primary-green);
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 1.5rem;
+            display: block;
+        }
+        .toggle-link:hover {
+            text-decoration: underline;
+        }
+        .form-group {
+            text-align: left;
+        }
+        #registerFields {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <img src="https://www.atualsistemas.com.br/wp-content/uploads/2021/03/LOGO_BRANCA_HORIZONTAL_SITE.png" alt="Atual Sistemas" style="max-width: 200px;">
+        </div>
+        <h2 id="formTitle">Bem-vindo(a)</h2>
+        <p id="formSubtitle">Acesse o gerador de propostas.</p>
+        
+        <div id="errorMsg" class="error-msg"></div>
+        <div id="successMsg" class="success-msg"></div>
+
+        <form id="authForm">
+            <div id="registerFields">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="nameInput" placeholder="Seu nome">
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Equipe (Opcional)</label>
+                    <input type="text" id="teamObsInput" placeholder="Ex: Equipe Norte">
+                </div>
+                <div class="form-group" style="margin-top: 1rem; margin-bottom: 1rem;">
+                    <label>Cargo</label>
+                    <div style="display: flex; gap: 15px; margin-top: 5px;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="roleObs" value="Vendedor" checked> Vendedor</label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="roleObs" value="Responsável"> Responsável</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>E-mail Corporativo</label>
+                <input type="email" id="emailInput" placeholder="nome@atualsistemas.com.br" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="passwordInput" placeholder="••••••••" required>
+            </div>
+            
+            <div class="form-group" id="confirmPasswordGroup" style="display: none; margin-top: 1rem;">
+                <label>Confirmar Senha</label>
+                <input type="password" id="confirmPasswordInput" placeholder="••••••••">
+                <small id="passwordMatchText" style="display: none; margin-top: 5px; font-weight: 500;"></small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="submitBtn">Entrar</button>
+        </form>
+
+        <span class="toggle-link" id="toggleMode">Não tem conta? Solicite acesso.</span>
+
+        <!-- Tela de Sucesso Pós-Cadastro -->
+        <div id="successScreen" style="display: none; text-align: center; padding: 10px 0;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+            <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">Requisição Enviada!</h3>
+            <p style="color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                Seu cadastro foi realizado com sucesso. Por favor, aguarde o Administrador revisar e aprovar o seu acesso.
+            </p>
+            <button class="btn btn-secondary" style="width: 100%;" id="btnBackToLogin">Voltar para o Login</button>
+        </div>
+    </div>
+
+    <script src="db-local.js"></script>
+    <script>
+        // Redireciona se já estiver logado
+        if (getSession()) {
+            window.location.href = 'dashboard.html';
+        }
+
+        let isLoginMode = true;
+        
+        const formTitle = document.getElementById('formTitle');
+        const formSubtitle = document.getElementById('formSubtitle');
+        const submitBtn = document.getElementById('submitBtn');
+        const toggleMode = document.getElementById('toggleMode');
+        const registerFields = document.getElementById('registerFields');
+        const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+        const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const nameInput = document.getElementById('nameInput');
+        const emailInput = document.getElementById('emailInput');
+        const authForm = document.getElementById('authForm');
+        const successScreen = document.getElementById('successScreen');
+
+        // Auto-completar e-mail corporativo
+        emailInput.addEventListener('blur', (e) => {
+            let val = e.target.value.trim();
+            if (val && !val.includes('@')) {
+                e.target.value = val + '@atualsistemas.com.br';
+            }
+        });
+
+        toggleMode.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            if (isLoginMode) {
+                formTitle.innerText = "Bem-vindo(a)";
+                formSubtitle.innerText = "Acesse o gerador de propostas.";
+                submitBtn.innerText = "Entrar";
+                toggleMode.innerText = "Não tem conta? Solicite acesso.";
+                registerFields.style.display = 'none';
+                confirmPasswordGroup.style.display = 'none';
+                nameInput.removeAttribute('required');
+                confirmPasswordInput.removeAttribute('required');
+            } else {
+                formTitle.innerText = "Solicitar Acesso";
+                formSubtitle.innerText = "Crie sua conta para gerar propostas.";
+                submitBtn.innerText = "Cadastrar";
+                toggleMode.innerText = "Já tem uma conta? Faça login.";
+                registerFields.style.display = 'block';
+                confirmPasswordGroup.style.display = 'block';
+                nameInput.setAttribute('required', 'true');
+                confirmPasswordInput.setAttribute('required', 'true');
+            }
+        });
+
+        // Verificação de senha em tempo real
+        const passwordMatchText = document.getElementById('passwordMatchText');
+        const checkPasswordsMatch = () => {
+            if (isLoginMode) return;
+            
+            const pass = document.getElementById('passwordInput').value;
+            const confirm = confirmPasswordInput.value;
+            
+            if (confirm.length > 0) {
+                passwordMatchText.style.display = 'block';
+                if (pass !== confirm) {
+                    confirmPasswordInput.style.borderColor = '#ef4444';
+                    confirmPasswordInput.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.3)';
+                    passwordMatchText.style.color = '#ef4444';
+                    passwordMatchText.innerText = 'As senhas não coincidem.';
+                } else {
+                    confirmPasswordInput.style.borderColor = 'var(--primary-green)';
+                    confirmPasswordInput.style.boxShadow = '0 0 0 2px rgba(0, 168, 134, 0.3)';
+                    passwordMatchText.style.color = 'var(--primary-green)';
+                    passwordMatchText.innerText = 'Senhas iguais!';
+                }
+            } else {
+                confirmPasswordInput.style.borderColor = '';
+                confirmPasswordInput.style.boxShadow = '';
+                passwordMatchText.style.display = 'none';
+            }
+        };
+
+        document.getElementById('passwordInput').addEventListener('input', checkPasswordsMatch);
+        confirmPasswordInput.addEventListener('input', checkPasswordsMatch);
+
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const name = nameInput.value;
+            const teamObs = document.getElementById('teamObsInput').value;
+            const roleObs = document.querySelector('input[name="roleObs"]:checked')?.value || 'Vendedor';
+
+            try {
+                if (isLoginMode) {
+                    login(email, password);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    const confirmPass = confirmPasswordInput.value;
+                    if (password !== confirmPass) {
+                        throw new Error("As senhas não coincidem. Tente novamente.");
+                    }
+                    
+                    register(name, email, password, teamObs, roleObs);
+                    
+                    // Mostra a tela de sucesso
+                    authForm.style.display = 'none';
+                    toggleMode.style.display = 'none';
+                    formTitle.style.display = 'none';
+                    formSubtitle.style.display = 'none';
+                    successScreen.style.display = 'block';
+                    
+                    // Reseta os campos para o futuro
+                    authForm.reset();
+                    confirmPasswordGroup.style.display = 'none';
+                    passwordMatchText.style.display = 'none';
+                    confirmPasswordInput.style.borderColor = '';
+                    confirmPasswordInput.style.boxShadow = '';
+                }
+            } catch (err) {
+                errorMsg.innerText = err.message;
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Evento de Voltar para Login após sucesso
+        document.getElementById('btnBackToLogin').addEventListener('click', () => {
+            successScreen.style.display = 'none';
+            authForm.style.display = 'block';
+            toggleMode.style.display = 'block';
+            formTitle.style.display = 'block';
+            formSubtitle.style.display = 'block';
+            toggleMode.click(); // Força a volta visual para o modo "Login"
+        });
+    </script>
+</body>
+</html>

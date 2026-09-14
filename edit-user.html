@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('theme')==='light') document.documentElement.setAttribute('data-theme', 'light');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Usuário - Atual Sistemas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header" style="background: var(--panel-bg); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+        <h2 style="color: white; margin: 0; font-size: 1.2rem;">Editar Usuário</h2>
+        <a href="admin.html#tab-users" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Voltar ao Painel</a>
+    </div>
+
+    <div style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+        <div style="background: var(--panel-bg); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <div class="form-group">
+                <label>Nome do Usuário</label>
+                <input type="text" id="userName">
+            </div>
+            <div class="form-group">
+                <label>E-mail Corporativo</label>
+                <input type="email" id="userEmail">
+            </div>
+            <div class="form-group">
+                <label>Função no Sistema</label>
+                <select id="userRole" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);">
+                    <option value="vendedor">Vendedor (Padrão)</option>
+                    <option value="dono_equipe">Dono de Equipe</option>
+                    <option value="admin">Administrador Geral</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Equipes Vinculadas</label>
+                <div class="custom-dropdown" style="position: relative;">
+                    <button type="button" class="btn" id="dropdownBtnUser" style="width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main);">
+                        <span>Selecione as Equipes...</span>
+                        <span style="font-size: 0.8rem;">▼</span>
+                    </button>
+                    <div id="userTeamsContainer" class="dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel-bg); border: 1px solid var(--primary-blue); border-radius: 6px; padding: 15px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.5); max-height: 200px; overflow-y: auto; flex-direction: column; gap: 10px;">
+                        <!-- Checkboxes injetados via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: right; margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <div id="statusIndicator" style="font-size: 0.9rem; font-weight: 600;"></div>
+                <div>
+                    <button class="btn btn-secondary" onclick="window.location.href='admin.html#tab-users'" style="margin-right: 10px;">Cancelar</button>
+                    <button class="btn btn-primary" id="btnSave">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="db-local.js"></script>
+    <script>
+        requireAdmin();
+        
+        const params = new URLSearchParams(window.location.search);
+        const userId = params.get('id');
+        
+        if (!userId) {
+            alert("Usuário não encontrado!");
+            window.location.href = 'admin.html#tab-users';
+        }
+
+        const users = getUsers();
+        const teams = getTeams();
+        const user = users.find(u => u.id === userId);
+        
+        if (!user) {
+            alert("Usuário não encontrado no banco de dados!");
+            window.location.href = 'admin.html#tab-users';
+        }
+
+        // Renderiza Checkboxes de Equipes
+        const container = document.getElementById('userTeamsContainer');
+        if (teams.length === 0) {
+            container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Nenhuma equipe cadastrada no sistema.</span>';
+        } else {
+            container.innerHTML = teams.map(t => `
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
+                    <input type="checkbox" class="user-team-cb" value="${t.id}" ${(user.teamIds || []).includes(t.id) ? 'checked' : ''}> 
+                    ${t.name}
+                </label>
+            `).join('');
+        }
+
+        // Dropdown Logic
+        document.getElementById('dropdownBtnUser').addEventListener('click', (e) => {
+            const menu = document.getElementById('userTeamsContainer');
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-dropdown')) {
+                document.getElementById('userTeamsContainer').style.display = 'none';
+            }
+        });
+
+        // Popula form
+        document.getElementById('userName').value = user.name;
+        document.getElementById('userEmail').value = user.email;
+        document.getElementById('userRole').value = user.role || 'vendedor';
+
+        const statusIndicator = document.getElementById('statusIndicator');
+        if (user.status === 'pending') {
+            statusIndicator.innerHTML = `
+                <div style="display: inline-flex; align-items: center; background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); padding: 8px 16px; border-radius: 8px; box-shadow: inset 0 0 10px rgba(234, 179, 8, 0.1);">
+                   <div style="width: 10px; height: 10px; background-color: #eab308; border-radius: 50%; margin-right: 12px; box-shadow: 0 0 8px #eab308;"></div>
+                   <div style="display: flex; flex-direction: column; text-align: left;">
+                      <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Status da Conta</span>
+                      <span style="color: #eab308; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.5px;">AGUARDANDO APROVAÇÃO</span>
+                   </div>
+                </div>
+            `;
+            document.getElementById('btnSave').innerText = 'Aprovar e Salvar';
+        } else {
+            statusIndicator.innerHTML = `
+                <div style="display: inline-flex; align-items: center; background: rgba(0, 168, 134, 0.15); border: 1px solid rgba(0, 168, 134, 0.4); padding: 8px 16px; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0, 168, 134, 0.1);">
+                   <div style="width: 10px; height: 10px; background-color: var(--primary-green); border-radius: 50%; margin-right: 12px; box-shadow: 0 0 8px var(--primary-green);"></div>
+                   <div style="display: flex; flex-direction: column; text-align: left;">
+                      <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Status da Conta</span>
+                      <span style="color: var(--primary-green); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.5px;">APROVADO E ATIVO</span>
+                   </div>
+                </div>
+            `;
+        }
+
+        document.getElementById('btnSave').addEventListener('click', () => {
+            const name = document.getElementById('userName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const role = document.getElementById('userRole').value;
+            
+            const checkboxes = document.querySelectorAll('.user-team-cb:checked');
+            const teamIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            if(!name || !email) return alert("Nome e E-mail são obrigatórios.");
+            if(teamIds.length === 0) return alert("É obrigatório vincular o usuário a pelo menos uma equipe.");
+            
+            try {
+                // Atualiza dados básicos
+                updateUserByAdmin(user.id, name, email);
+                
+                // Se estiver pendente, aprova
+                if (user.status === 'pending') {
+                    approveUser(user.id, role, teamIds);
+                } else {
+                    // Para atualizar role/teams de um usuário já aprovado sem usar o approveUser() 
+                    // precisaremos alterar direto no DB. Como approveUser() força status para "approved", podemos usá-lo.
+                    approveUser(user.id, role, teamIds);
+                }
+
+                window.location.href = 'admin.html#tab-users';
+            } catch(e) {
+                alert(e.message);
+            }
+        });
+    </script>
+</body>
+</html>

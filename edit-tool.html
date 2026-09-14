@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('theme')==='light') document.documentElement.setAttribute('data-theme', 'light');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Ferramenta - Atual Sistemas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header" style="background: var(--panel-bg); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+        <h2 style="color: white; margin: 0; font-size: 1.2rem;">Editar Ferramenta</h2>
+        <a href="admin.html#tab-settings" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Voltar ao Painel</a>
+    </div>
+
+    <div style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+        <div style="background: var(--panel-bg); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <div class="form-group">
+                <label>ID / Nome Curto (Não Editável)</label>
+                <input type="text" id="toolId" disabled style="background: var(--bg-main);">
+            </div>
+            <div class="form-group">
+                <label>Nome Comercial</label>
+                <input type="text" id="toolName">
+            </div>
+            <div class="form-group">
+                <label>Descrição Completa</label>
+                <textarea id="toolDesc" rows="4" style="width:100%; border-radius:6px; padding:10px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-main); font-family: 'Inter', sans-serif;"></textarea>
+            </div>
+            <div class="form-group">
+                <label>URL da Imagem (Opcional)</label>
+                <input type="text" id="toolImg" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>Link Saiba Mais (Opcional)</label>
+                <input type="text" id="toolLink" placeholder="https://...">
+            </div>
+            
+            <div style="text-align: right; margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="window.location.href='admin.html#tab-settings'" style="margin-right: 10px;">Cancelar</button>
+                <button class="btn btn-primary" id="btnSave">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db-local.js"></script>
+    <script>
+        requireAdmin();
+        
+        const params = new URLSearchParams(window.location.search);
+        const toolId = params.get('id');
+        
+        if (!toolId) {
+            alert("Ferramenta não encontrada!");
+            window.location.href = 'admin.html#tab-settings';
+        }
+
+        const tools = getTools();
+        const tool = tools.find(t => t.id === toolId);
+        
+        if (!tool) {
+            alert("Ferramenta não encontrada no banco de dados!");
+            window.location.href = 'admin.html#tab-settings';
+        }
+
+        document.getElementById('toolId').value = tool.id;
+        document.getElementById('toolName').value = tool.name;
+        document.getElementById('toolDesc').value = tool.desc;
+        document.getElementById('toolImg').value = tool.img || '';
+        document.getElementById('toolLink').value = tool.link || '';
+
+        document.getElementById('btnSave').addEventListener('click', () => {
+            const name = document.getElementById('toolName').value;
+            const desc = document.getElementById('toolDesc').value;
+            const img = document.getElementById('toolImg').value;
+            const link = document.getElementById('toolLink').value;
+            
+            if(!name || !desc) return alert("Nome e descrição são obrigatórios.");
+            
+            try {
+                updateTool(tool.id, name, desc, img, link);
+                window.location.href = 'admin.html#tab-settings';
+            } catch(e) {
+                alert(e.message);
+            }
+        });
+    </script>
+</body>
+</html>

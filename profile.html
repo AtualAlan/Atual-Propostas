@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('theme')==='light') document.documentElement.setAttribute('data-theme', 'light');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - Atual Sistemas</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .profile-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border: none;
+            padding-top: 4rem;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .admin-nav {
+            display: flex;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        .btn-reject:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" style="justify-content: center; background: var(--bg-color);">
+        <aside class="sidebar profile-container">
+            <div class="admin-nav" style="justify-content: space-between; border-bottom: none; align-items: center;">
+                <h1 style="color: var(--primary-green); font-size: 1.5rem;">Meu Perfil</h1>
+                <div class="header-actions">
+                    <button class="action-btn" onclick="window.history.back()" style="background: var(--input-bg);">Voltar</button>
+                    <button class="action-btn btn-reject" onclick="logout()" style="color: #ef4444;">Sair</button>
+                </div>
+            </div>
+
+            <div class="form-section" style="margin-top: 2rem;">
+                <h3>Atualizar Dados Pessoais</h3>
+                <form id="profileForm" class="form-container">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="profileName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail Corporativo</label>
+                        <input type="email" id="profileEmail" required>
+                    </div>
+                    
+                    <h3 style="margin-top: 1.5rem;">Segurança</h3>
+                    <div class="form-group">
+                        <label>Senha Atual <small>(Obrigatória para alterar a senha)</small></label>
+                        <input type="password" id="profileOldPassword">
+                    </div>
+                    <div class="form-group">
+                        <label>Nova Senha <small>(Deixe em branco para não alterar)</small></label>
+                        <input type="password" id="profilePassword">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Nova Senha</label>
+                        <input type="password" id="profileConfirmPassword">
+                        <div id="passwordMatchMessage" style="font-size: 0.8rem; margin-top: 5px; font-weight: bold;"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">Salvar Alterações</button>
+                </form>
+            </div>
+        </aside>
+    </div>
+
+    <script src="db-local.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = JSON.parse(localStorage.getItem(SESSION_KEY));
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('profileName').value = session.name;
+            document.getElementById('profileEmail').value = session.email;
+
+            // Validação de senha
+            const passInput = document.getElementById('profilePassword');
+            const confirmInput = document.getElementById('profileConfirmPassword');
+            const matchMsg = document.getElementById('passwordMatchMessage');
+
+            const checkMatch = () => {
+                if (passInput.value === '' && confirmInput.value === '') {
+                    confirmInput.style.borderColor = 'var(--border-color)';
+                    matchMsg.textContent = '';
+                    return;
+                }
+                
+                if (passInput.value === confirmInput.value) {
+                    confirmInput.style.borderColor = 'var(--primary-green)';
+                    matchMsg.textContent = 'As senhas coincidem ✓';
+                    matchMsg.style.color = 'var(--primary-green)';
+                } else {
+                    confirmInput.style.borderColor = '#ef4444';
+                    matchMsg.textContent = 'As senhas não coincidem ✗';
+                    matchMsg.style.color = '#ef4444';
+                }
+            };
+
+            passInput.addEventListener('input', checkMatch);
+            confirmInput.addEventListener('input', checkMatch);
+
+            // Completar email corporativo ao perder o foco (blur)
+            const emailInput = document.getElementById('profileEmail');
+            emailInput.addEventListener('blur', () => {
+                const val = emailInput.value.trim();
+                if (val && !val.includes('@')) {
+                    emailInput.value = val + '@atualsistemas.com.br';
+                }
+            });
+
+            // Form Submit
+            document.getElementById('profileForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const newName = document.getElementById('profileName').value;
+                const newEmail = document.getElementById('profileEmail').value;
+                const oldPass = document.getElementById('profileOldPassword').value;
+                const newPass = passInput.value;
+                const confirmPass = confirmInput.value;
+
+                if (newPass !== '') {
+                    if (oldPass === '') {
+                        alert("Por favor, digite sua senha atual para alterar a senha.");
+                        return;
+                    }
+                    if (newPass !== confirmPass) {
+                        alert("A nova senha e a confirmação não coincidem!");
+                        return;
+                    }
+                }
+
+                try {
+                    updateProfile(session.id, newName, newEmail, oldPass, newPass);
+                    alert("Perfil atualizado com sucesso!");
+                    
+                    document.getElementById('profileOldPassword').value = '';
+                    passInput.value = '';
+                    confirmInput.value = '';
+                    checkMatch();
+                } catch (err) {
+                    alert(err.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>if(localStorage.getItem('theme')==='light') document.documentElement.setAttribute('data-theme', 'light');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Equipe - Atual Sistemas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header" style="background: var(--panel-bg); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+        <h2 style="color: white; margin: 0; font-size: 1.2rem;">Editar Equipe</h2>
+        <a href="admin.html#tab-teams" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Voltar ao Painel</a>
+    </div>
+
+    <div style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+        <div style="background: var(--panel-bg); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <div class="form-group">
+                <label>Nome da Equipe</label>
+                <input type="text" id="teamName">
+            </div>
+            
+            <div style="text-align: right; margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="window.location.href='admin.html#tab-teams'" style="margin-right: 10px;">Cancelar</button>
+                <button class="btn btn-primary" id="btnSave">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db-local.js"></script>
+    <script>
+        requireAdmin();
+        
+        const params = new URLSearchParams(window.location.search);
+        const teamId = params.get('id');
+        
+        if (!teamId) {
+            alert("Equipe não encontrada!");
+            window.location.href = 'admin.html#tab-teams';
+        }
+
+        const teams = getTeams();
+        const team = teams.find(t => t.id === teamId);
+        
+        if (!team) {
+            alert("Equipe não encontrada no banco de dados!");
+            window.location.href = 'admin.html#tab-teams';
+        }
+
+        // Popula form
+        document.getElementById('teamName').value = team.name;
+
+        document.getElementById('btnSave').addEventListener('click', () => {
+            const name = document.getElementById('teamName').value.trim();
+            
+            if(!name) return alert("O Nome da Equipe é obrigatório.");
+            
+            try {
+                updateTeam(team.id, name);
+                window.location.href = 'admin.html#tab-teams';
+            } catch(e) {
+                alert(e.message);
+            }
+        });
+    </script>
+</body>
+</html>
