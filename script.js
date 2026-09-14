@@ -284,4 +284,43 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleDesktopView.classList.add('active');
         toggleMobileView.classList.remove('active');
     });
+
+    // Máscara e Busca de CNPJ
+    const inputCnpj = document.getElementById('clientCNPJ');
+    const inputClientName = document.getElementById('clientName');
+
+    if (inputCnpj) {
+        inputCnpj.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            
+            if (val.length > 2) val = val.substring(0,2) + '.' + val.substring(2);
+            if (val.length > 6) val = val.substring(0,6) + '.' + val.substring(6);
+            if (val.length > 10) val = val.substring(0,10) + '/' + val.substring(10);
+            if (val.length > 15) val = val.substring(0,15) + '-' + val.substring(15, 17);
+            
+            e.target.value = val;
+
+            if (val.length === 18) {
+                const cleanCnpj = val.replace(/\D/g, '');
+                const oldColor = inputCnpj.style.color;
+                inputCnpj.style.color = 'var(--primary-green)'; // Feedback visual
+                
+                fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error("CNPJ não encontrado");
+                        return response.json();
+                    })
+                    .then(data => {
+                        inputClientName.value = data.nome_fantasia || data.razao_social || '';
+                        // Se houver lógica futura de endereço, pode ser implementada aqui
+                    })
+                    .catch(err => {
+                        console.warn("CNPJ não localizado na base pública:", err);
+                    })
+                    .finally(() => {
+                        inputCnpj.style.color = oldColor;
+                    });
+            }
+        });
+    }
 });
