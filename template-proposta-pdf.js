@@ -36,6 +36,7 @@ const getProposalTemplatePDF = (data) => {
             body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #ffffff; color: #334155; line-height: 1.6; }
             .container { max-width: 800px; margin: 0 auto; background-color: #ffffff; }
             .header { background: linear-gradient(135deg, #00A886 0%, #007860 100%); padding: 40px 20px; text-align: center; color: #ffffff; }
+            .logo { max-width: 250px; margin-bottom: 20px; }
             .header h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
             .content { padding: 40px 30px; }
             .greeting { font-size: 18px; margin-bottom: 30px; }
