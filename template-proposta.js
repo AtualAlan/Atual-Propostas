@@ -158,12 +158,7 @@ const getProposalTemplate = (data) => {
             .tab-btn:hover {
                 background: #e2e8f0;
             }
-            .tab-btn.active {
-                background: #00A886;
-                color: white;
-                border-color: #00A886;
-                box-shadow: 0 4px 6px -1px rgba(0, 168, 134, 0.3);
-            }
+            /* As classes active serão controladas pelo CSS Radio Hack dinamicamente */
             .tab-content {
                 display: none;
                 background: #ffffff;
@@ -173,9 +168,20 @@ const getProposalTemplate = (data) => {
                 animation: fadeIn 0.3s;
                 page-break-inside: avoid;
             }
-            .tab-content.active {
+            
+            /* CSS Dinâmico para as abas */
+            ${Array.isArray(data.segmentFeatures) ? data.segmentFeatures.map((f, i) => `
+            #tab-feat-${i}:checked ~ .content-${i} {
                 display: block;
             }
+            #tab-feat-${i}:checked ~ .tabs-buttons label[for="tab-feat-${i}"] {
+                background: #00A886;
+                color: white;
+                border-color: #00A886;
+                box-shadow: 0 4px 6px -1px rgba(0, 168, 134, 0.3);
+            }
+            `).join('')}
+            
             .tab-layout {
                 display: flex;
                 gap: 20px;
@@ -313,16 +319,20 @@ const getProposalTemplate = (data) => {
 
                 <h2 class="section-title">Por que escolher a Atual Sistemas?</h2>
                 
-                <!-- Sistema de Abas Interativas -->
+                <!-- Sistema de Abas CSS Nativo (Sem JS) -->
                 <div class="tabs-container">
+                    ${Array.isArray(data.segmentFeatures) ? data.segmentFeatures.map((f, i) => `
+                        <input type="radio" name="tab-group" id="tab-feat-${i}" ${i === 0 ? 'checked' : ''} style="display: none;">
+                    `).join('') : ''}
+                    
                     <div class="tabs-buttons">
                         ${Array.isArray(data.segmentFeatures) ? data.segmentFeatures.map((f, i) => `
-                            <button class="tab-btn ${i === 0 ? 'active' : ''}" onclick="openTab('tab-feat-${i}', this)">${f.title}</button>
+                            <label for="tab-feat-${i}" class="tab-btn" style="cursor: pointer;">${f.title}</label>
                         `).join('') : ''}
                     </div>
 
                     ${Array.isArray(data.segmentFeatures) ? data.segmentFeatures.map((f, i) => `
-                    <div id="tab-feat-${i}" class="tab-content ${i === 0 ? 'active' : ''}">
+                    <div class="tab-content content-${i}">
                         <div class="tab-layout">
                             <div class="tab-text" style="flex: 1;">
                                 <h4>${f.title}</h4>
@@ -389,22 +399,8 @@ const getProposalTemplate = (data) => {
         </div>
 
         <script>
-            // Lógica para funcionamento das abas na proposta gerada
-            function openTab(tabId, btnElement) {
-                // Remove active de todas as abas e botões
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                // Ativa a aba e botão selecionado
-                document.getElementById(tabId).classList.add('active');
-                if (btnElement) {
-                    btnElement.classList.add('active');
-                }
-            }
+            // Scripts nativos removidos. As abas agora funcionam via CSS puro 
+            // garantindo 100% de compatibilidade em visualizadores de e-mail e WhatsApp.
         </script>
     </body>
     </html>
