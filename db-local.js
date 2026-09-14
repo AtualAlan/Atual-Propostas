@@ -502,7 +502,7 @@ const deleteProposal = (id) => {
     }
 };
 
-const updateProposalStatus = (id, newStatus, lostReason = null) => {
+const updateProposalStatus = (id, newStatus, lostReason = null, newOrderArray = null) => {
     const session = getSession();
     if (!session) throw new Error("Não autenticado");
     
@@ -523,6 +523,16 @@ const updateProposalStatus = (id, newStatus, lostReason = null) => {
             if (!p.data) p.data = {};
             p.data.lostReason = lostReason;
         }
+        
+        if (newOrderArray && Array.isArray(newOrderArray)) {
+            newOrderArray.forEach((propId, index) => {
+                const targetP = db.proposals.find(px => px.id === propId);
+                if (targetP) {
+                    targetP.order = index;
+                }
+            });
+        }
+        
         saveDB(db);
     } else {
         throw new Error("Sem permissão para alterar esta proposta");

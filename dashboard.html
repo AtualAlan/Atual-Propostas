@@ -637,7 +637,12 @@
             Object.values(cols).forEach(col => col.innerHTML = '');
             
             // Clone and sort
-            const sorted = [...proposals].sort((a,b) => new Date(b.date) - new Date(a.date));
+            const sorted = [...proposals].sort((a,b) => {
+                if (a.order !== undefined && b.order !== undefined) {
+                    return a.order - b.order;
+                }
+                return new Date(b.date) - new Date(a.date);
+            });
 
             const colors = {
                 'rascunho': '#94a3b8',
@@ -950,9 +955,10 @@
             }
             
             try {
-                updateProposalStatus(pendingLostProposalId, 'perdida', finalReason);
+                updateProposalStatus(pendingLostProposalId, 'perdida', finalReason, window.pendingNewOrderArray);
                 lostModal.style.display = 'none';
                 pendingLostProposalId = null;
+                window.pendingNewOrderArray = null;
                 lostCustom.value = '';
                 updateData();
             } catch(err) {
@@ -960,9 +966,38 @@
             }
         });
 
+        const getDragAfterElement = (container, y) => {
+            const draggableElements = [...container.querySelectorAll('.proposal-card:not([style*="opacity: 0.5"])')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        };
+
         // Initialize Kanban Drag & Drop
         document.querySelectorAll('.kanban-col').forEach(col => {
-            col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+            col.addEventListener('dragover', e => { 
+                e.preventDefault(); 
+                col.classList.add('drag-over'); 
+                
+                const contentCol = col.querySelector('.kanban-col-content');
+                if (contentCol) {
+                    const afterElement = getDragAfterElement(contentCol, e.clientY);
+                    const draggable = document.querySelector('.proposal-card[style*="opacity: 0.5"]');
+                    if (draggable) {
+                        if (afterElement == null) {
+                            contentCol.appendChild(draggable);
+                        } else {
+                            contentCol.insertBefore(draggable, afterElement);
+                        }
+                    }
+                }
+            });
             col.addEventListener('dragleave', e => col.classList.remove('drag-over'));
             col.addEventListener('drop', e => {
                 e.preventDefault();
@@ -970,16 +1005,21 @@
                 const id = e.dataTransfer.getData('text/plain');
                 const newStatus = col.dataset.status;
                 if (id && newStatus) {
+                    const contentCol = col.querySelector('.kanban-col-content');
+                    const newOrderArray = contentCol ? [...contentCol.querySelectorAll('.proposal-card')].map(c => c.dataset.id) : null;
+                    
                     if (newStatus === 'perdida') {
                         pendingLostProposalId = id;
+                        window.pendingNewOrderArray = newOrderArray;
                         populateLostReasons();
                         lostModal.style.display = 'flex';
                     } else {
                         try {
-                            updateProposalStatus(id, newStatus);
+                            updateProposalStatus(id, newStatus, null, newOrderArray);
                             updateData();
                         } catch(err) {
                             alert(err.message);
+                            updateData(); // Revert on error
                         }
                     }
                 }
