@@ -180,7 +180,7 @@ const getProposalTemplate = (data) => {
                 border-color: #00A886;
                 box-shadow: 0 4px 6px -1px rgba(0, 168, 134, 0.3);
             }
-            `).join('')}
+            `).join('') : ''}
             
             .tab-layout {
                 display: flex;
