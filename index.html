@@ -127,10 +127,13 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button type="submit" class="btn btn-primary" id="btnPreview" style="flex: 1 1 100%; border: 1px solid transparent;">Pré-visualizar Proposta</button>
+                    <div style="flex: 1 1 100%; display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary" id="btnPreviewWeb" style="flex: 1; border: 1px solid transparent;">Prévia Web</button>
+                        <button type="button" class="btn btn-primary" id="btnPreviewPdf" style="flex: 1; border: 1px solid transparent; background-color: #0f172a;">Prévia PDF</button>
+                    </div>
                     <button type="button" class="btn btn-secondary" id="btnSave" style="flex: 1 1 100%; border: 1px solid var(--primary-green); color: var(--primary-green);">Salvar no Kanban</button>
                     <div style="flex: 1 1 100%; display: flex; gap: 10px;">
-                        <button type="button" class="btn btn-secondary" id="btnExportHtml" style="flex: 1;" disabled>Baixar HTML (Mobile)</button>
+                        <button type="button" class="btn btn-secondary" id="btnExportHtml" style="flex: 1;" disabled>Baixar HTML</button>
                         <button type="button" class="btn btn-secondary" id="btnExportPdf" style="flex: 1;" disabled>Baixar PDF</button>
                     </div>
                 </div>
@@ -159,6 +162,7 @@
     <!-- Scripts Internos -->
     <script src="db-local.js"></script>
     <script src="template-proposta.js"></script>
+    <script src="template-proposta-pdf.js"></script>
     <script src="script.js"></script>
     <script>
         requireAuth();

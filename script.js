@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewContainer = document.getElementById('previewContainer');
 
     let currentProposalHtml = '';
+    let currentProposalPdfHtml = '';
     let loadedProposalId = null;
     let loadedProposalStatus = null;
 
@@ -143,10 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
     formatCurrencyInput(document.getElementById('implCost'));
     formatCurrencyInput(document.getElementById('monthlyFee'));
 
-    // Geração do Preview
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
+    // Função auxiliar para coletar os dados do form
+    const gatherFormData = () => {
         const segKey = segmentSelect.value;
         const segmentInfo = dbSegments.find(s => s.id === segKey);
         
@@ -161,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             });
 
-        const data = {
+        return {
             clientName: document.getElementById('clientName').value,
             clientCNPJ: document.getElementById('clientCNPJ').value,
             contactName: document.getElementById('contactName').value,
@@ -172,22 +171,27 @@ document.addEventListener('DOMContentLoaded', () => {
             hasMigration: document.getElementById('hasMigration').checked,
             segmentLabel: segmentInfo ? segmentInfo.name : '',
             segmentFeatures: segmentInfo ? segmentInfo.features : {},
-            tools: selectedToolsData
+            tools: selectedToolsData,
+            segmentKey: segKey
         };
+    };
 
+    // Geração do Preview Web
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = gatherFormData();
+        
         // Salvar localmente no LocalStorage form cache
-        const saveObj = { ...data, segment: segKey };
+        const saveObj = { ...data, segment: data.segmentKey };
         localStorage.setItem('proposalData', JSON.stringify(saveObj));
 
-
-        // Chama a função definida em template-proposta.js
+        // Chama as funções de template
         currentProposalHtml = getProposalTemplate(data);
+        currentProposalPdfHtml = getProposalTemplatePDF(data);
         
-        // Exibe no container
+        // Exibe no container a versão WEB
         emptyState.style.display = 'none';
         outputContainer.style.display = 'block';
-        
-        // Usa iframe para renderizar isoladamente o HTML e garantir estilos exatos
         outputContainer.innerHTML = `<iframe id="previewIframe" srcdoc="${currentProposalHtml.replace(/"/g, '&quot;')}"></iframe>`;
 
         // Habilita botões
@@ -195,35 +199,40 @@ document.addEventListener('DOMContentLoaded', () => {
         btnExportPdf.disabled = false;
     });
 
-    document.getElementById('btnSave').addEventListener('click', () => {
-        const segKey = segmentSelect.value;
-        const segmentInfo = dbSegments.find(s => s.id === segKey);
-        
-        const selectedToolsData = Array.from(checkboxes)
-            .filter(cb => cb.checked)
-            .map(cb => {
-                const dbTool = dbTools.find(t => t.id === cb.value);
-                return {
-                    name: cb.value,
-                    desc: dbTool ? dbTool.desc : "Módulo adicional para potencializar sua gestão.",
-                    img: dbTool ? dbTool.img : "",
-                    link: dbTool ? dbTool.link : ""
-                };
-            });
+    // Geração do Preview PDF
+    const btnPreviewPdf = document.getElementById('btnPreviewPdf');
+    if(btnPreviewPdf) {
+        btnPreviewPdf.addEventListener('click', () => {
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            const data = gatherFormData();
+            
+            // Salvar localmente no LocalStorage form cache
+            const saveObj = { ...data, segment: data.segmentKey };
+            localStorage.setItem('proposalData', JSON.stringify(saveObj));
 
-        const data = {
-            clientName: document.getElementById('clientName').value,
-            clientCNPJ: document.getElementById('clientCNPJ').value,
-            contactName: document.getElementById('contactName').value,
-            implCost: document.getElementById('implCost').value,
-            monthlyFee: document.getElementById('monthlyFee').value,
-            implTime: document.getElementById('implTime').value,
-            migratedSystem: document.getElementById('migratedSystem').value,
-            hasMigration: document.getElementById('hasMigration').checked,
-            segmentLabel: segmentInfo ? segmentInfo.name : '',
-            segmentFeatures: segmentInfo ? segmentInfo.features : {},
-            tools: selectedToolsData
-        };
+            // Chama as funções de template
+            currentProposalHtml = getProposalTemplate(data);
+            currentProposalPdfHtml = getProposalTemplatePDF(data);
+            
+            // Exibe no container a versão PDF
+            emptyState.style.display = 'none';
+            outputContainer.style.display = 'block';
+            outputContainer.innerHTML = `<iframe id="previewIframe" srcdoc="${currentProposalPdfHtml.replace(/"/g, '&quot;')}"></iframe>`;
+
+            // Habilita botões
+            btnExportHtml.disabled = false;
+            btnExportPdf.disabled = false;
+        });
+    }
+    document.getElementById('btnSave').addEventListener('click', () => {
+        if(!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        const data = gatherFormData();
 
         try {
             const savedProp = saveProposal(data, loadedProposalId, loadedProposalStatus);
@@ -255,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Cria um elemento temporário para o PDF (pois o iframe não é bem capturado)
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = currentProposalHtml;
+        tempDiv.innerHTML = currentProposalPdfHtml;
         
         const opt = {
             margin:       0,
