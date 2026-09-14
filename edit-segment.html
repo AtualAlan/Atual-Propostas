@@ -61,9 +61,8 @@
     <script src="db-local.js"></script>
     <script>
         requireAdmin();
-        
-        const params = new URLSearchParams(window.location.search);
-        const segId = params.get('id');
+        const urlParams = new URLSearchParams(window.location.search);
+        const segId = urlParams.get('id');
         
         if (!segId) {
             alert("Segmento não encontrado!");

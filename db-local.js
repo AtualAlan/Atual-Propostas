@@ -451,6 +451,7 @@ const saveProposal = (proposalData, existingId = null, existingStatus = null) =>
         teamIds: session.teamIds || [],
         date: new Date().toISOString(),
         status: existingStatus || 'rascunho',
+        order: Date.now(),
         data: proposalData
     };
     
