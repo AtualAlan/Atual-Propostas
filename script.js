@@ -229,7 +229,42 @@ document.addEventListener('DOMContentLoaded', () => {
         // Habilita botões
         btnExportHtml.disabled = false;
         btnExportPdf.disabled = false;
+        if(document.getElementById('btnCopyLink')) document.getElementById('btnCopyLink').style.display = 'block';
     });
+    
+    // Geração do Link Copiável
+    const btnCopyLink = document.getElementById('btnCopyLink');
+    if (btnCopyLink) {
+        btnCopyLink.addEventListener('click', () => {
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            const data = gatherFormData();
+            const cleanCnpj = data.clientCNPJ ? data.clientCNPJ.replace(/\D/g, '') : '';
+            const secretKey = cleanCnpj || 'public_atual'; // Se não tiver CNPJ, usa chave pública
+            
+            // Adiciona flag para o visualizador saber se pede senha
+            data.requiresPassword = !!cleanCnpj;
+            
+            const jsonStr = JSON.stringify(data);
+            const encrypted = CryptoJS.AES.encrypt(jsonStr, secretKey).toString();
+            
+            // Construir URL Base
+            let baseUrl = window.location.href.split('?')[0].replace('index.html', '');
+            if(!baseUrl.endsWith('/')) baseUrl += '/';
+            const finalUrl = `${baseUrl}proposta.html?data=${encodeURIComponent(encrypted)}`;
+            
+            // Copiar para a área de transferência
+            navigator.clipboard.writeText(finalUrl).then(() => {
+                const originalText = btnCopyLink.innerHTML;
+                btnCopyLink.innerHTML = "✅ Link Copiado!";
+                setTimeout(() => btnCopyLink.innerHTML = originalText, 2000);
+            }).catch(err => {
+                alert("Erro ao copiar o link. Tente novamente.");
+            });
+        });
+    }
 
     // Geração do Preview PDF
     const btnPreviewPdf = document.getElementById('btnPreviewPdf');

@@ -144,7 +144,8 @@
         <main class="preview-area">
             <div class="preview-header">
                 <h3>Visualização da Proposta</h3>
-                <div class="preview-actions">
+                <div class="preview-actions" style="display: flex; gap: 10px; align-items: center;">
+                    <button id="btnCopyLink" class="btn btn-secondary" style="display: none; padding: 6px 12px; font-size: 13px; border-color: #00A886; color: #00A886; font-weight: bold; background: rgba(0, 168, 134, 0.1);" title="Gerar link de compartilhamento">🔗 Copiar Link Web</button>
                     <button id="toggleMobileView" class="btn-icon" title="Ver como Mobile">📱</button>
                     <button id="toggleDesktopView" class="btn-icon active" title="Ver como Desktop">💻</button>
                 </div>
@@ -160,6 +161,7 @@
     </div>
 
     <!-- Scripts Internos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="db-local.js"></script>
     <script src="template-proposta.js"></script>
     <script src="template-proposta-pdf.js"></script>

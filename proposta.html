@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Proposta - Atual Sistemas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #334155;
+        }
+
+        #lock-screen {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            display: none; /* Initially hidden until we decide it's needed */
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #1e293b;
+            font-size: 24px;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00A886;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #00A886;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #008f72;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+            font-weight: 600;
+        }
+        
+        #loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 168, 134, 0.2);
+            border-top-color: #00A886;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tela de Carregamento Inicial -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <p style="margin: 0; font-weight: 600; color: #00A886;">Carregando proposta...</p>
+    </div>
+
+    <!-- Tela de Bloqueio (CNPJ) -->
+    <div id="lock-screen">
+        <span class="icon">🔒</span>
+        <h2>Proposta Protegida</h2>
+        <p>Esta proposta comercial é restrita. Por favor, insira o <strong>CNPJ da sua empresa</strong> para desbloquear o acesso.</p>
+        
+        <div class="form-group">
+            <label for="cnpjInput">CNPJ (Apenas números)</label>
+            <input type="text" id="cnpjInput" placeholder="00.000.000/0000-00" autocomplete="off">
+            <div id="errorMsg" class="error-msg">CNPJ incorreto. Acesso negado.</div>
+        </div>
+        
+        <button id="btnUnlock">Desbloquear Proposta</button>
+    </div>
+
+    <!-- Bibliotecas Necessárias -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="template-proposta.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encryptedData = urlParams.get('data');
+            
+            const loadingScreen = document.getElementById('loading');
+            const lockScreen = document.getElementById('lock-screen');
+            const btnUnlock = document.getElementById('btnUnlock');
+            const cnpjInput = document.getElementById('cnpjInput');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!encryptedData) {
+                loadingScreen.style.display = 'none';
+                document.body.innerHTML = '<h2 style="color: #ef4444; text-align: center; margin-top: 50px;">Erro: Link Inválido ou Corrompido.</h2><p style="text-align: center;">Nenhum dado de proposta foi encontrado nesta URL.</p>';
+                return;
+            }
+
+            // Máscara de CNPJ básica
+            cnpjInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/\D/g, '');
+                if (val.length > 2) val = val.substring(0,2) + '.' + val.substring(2);
+                if (val.length > 6) val = val.substring(0,6) + '.' + val.substring(6);
+                if (val.length > 10) val = val.substring(0,10) + '/' + val.substring(10);
+                if (val.length > 15) val = val.substring(0,15) + '-' + val.substring(15, 17);
+                e.target.value = val;
+            });
+
+            const renderProposal = (jsonString) => {
+                try {
+                    const dataObj = JSON.parse(jsonString);
+                    const html = getProposalTemplate(dataObj);
+                    
+                    // Substitui a página atual pela proposta
+                    document.open();
+                    document.write(html);
+                    document.close();
+                } catch (e) {
+                    console.error("Erro ao renderizar HTML", e);
+                    alert("Erro interno ao renderizar a proposta.");
+                }
+            };
+
+            const tryDecrypt = (key) => {
+                try {
+                    const bytes = CryptoJS.AES.decrypt(encryptedData, key);
+                    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+                    
+                    if (decrypted && decrypted.includes('"clientName"')) {
+                        // Descriptografia válida
+                        return decrypted;
+                    }
+                    return null;
+                } catch (e) {
+                    return null;
+                }
+            };
+
+            // Passo 1: Tentar chave pública primeiro
+            setTimeout(() => {
+                const publicDecrypted = tryDecrypt('public_atual');
+                
+                if (publicDecrypted) {
+                    // Proposta era pública (Sem CNPJ)
+                    renderProposal(publicDecrypted);
+                } else {
+                    // Proposta requer senha
+                    loadingScreen.style.display = 'none';
+                    lockScreen.style.display = 'block';
+                }
+            }, 600); // Pequeno atraso para o visual do spinner
+
+            // Passo 2: Tentar chave privada (CNPJ)
+            btnUnlock.addEventListener('click', () => {
+                const cleanCnpj = cnpjInput.value.replace(/\D/g, '');
+                if (cleanCnpj.length < 14) {
+                    errorMsg.textContent = "Digite um CNPJ válido (14 números).";
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+
+                errorMsg.style.display = 'none';
+                btnUnlock.textContent = 'Verificando...';
+                btnUnlock.style.opacity = '0.8';
+
+                setTimeout(() => {
+                    const privateDecrypted = tryDecrypt(cleanCnpj);
+                    
+                    if (privateDecrypted) {
+                        // Senha Correta!
+                        renderProposal(privateDecrypted);
+                    } else {
+                        // Senha Incorreta
+                        errorMsg.textContent = "CNPJ incorreto. Acesso negado.";
+                        errorMsg.style.display = 'block';
+                        btnUnlock.textContent = 'Desbloquear Proposta';
+                        btnUnlock.style.opacity = '1';
+                    }
+                }, 400);
+            });
+            
+            // Permitir apertar ENTER no input
+            cnpjInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') btnUnlock.click();
+            });
+        });
+    </script>
+</body>
+</html>
