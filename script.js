@@ -401,10 +401,18 @@ document.addEventListener('DOMContentLoaded', () => {
         inputCnpj.addEventListener('input', (e) => {
             let val = e.target.value.replace(/\D/g, '');
             
-            if (val.length > 2) val = val.substring(0,2) + '.' + val.substring(2);
-            if (val.length > 6) val = val.substring(0,6) + '.' + val.substring(6);
-            if (val.length > 10) val = val.substring(0,10) + '/' + val.substring(10);
-            if (val.length > 15) val = val.substring(0,15) + '-' + val.substring(15, 17);
+            if (val.length <= 11) {
+                // CPF
+                if (val.length > 3) val = val.substring(0,3) + '.' + val.substring(3);
+                if (val.length > 7) val = val.substring(0,7) + '.' + val.substring(7);
+                if (val.length > 11) val = val.substring(0,11) + '-' + val.substring(11, 13);
+            } else {
+                // CNPJ
+                if (val.length > 2) val = val.substring(0,2) + '.' + val.substring(2);
+                if (val.length > 6) val = val.substring(0,6) + '.' + val.substring(6);
+                if (val.length > 10) val = val.substring(0,10) + '/' + val.substring(10);
+                if (val.length > 15) val = val.substring(0,15) + '-' + val.substring(15, 17);
+            }
             
             e.target.value = val;
 

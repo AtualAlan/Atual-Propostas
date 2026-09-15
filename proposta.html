@@ -136,12 +136,12 @@
     <div id="lock-screen">
         <span class="icon">🔒</span>
         <h2>Proposta Protegida</h2>
-        <p>Esta proposta comercial é restrita. Por favor, insira o <strong>CNPJ da sua empresa</strong> para desbloquear o acesso.</p>
+        <p>Esta proposta comercial é restrita. Por favor, insira o <strong>CNPJ ou CPF</strong> para desbloquear o acesso.</p>
         
         <div class="form-group">
-            <label for="cnpjInput">CNPJ (Apenas números)</label>
-            <input type="text" id="cnpjInput" placeholder="00.000.000/0000-00" autocomplete="off">
-            <div id="errorMsg" class="error-msg">CNPJ incorreto. Acesso negado.</div>
+            <label for="cnpjInput">CNPJ ou CPF (Apenas números)</label>
+            <input type="text" id="cnpjInput" placeholder="Digite apenas os números" autocomplete="off">
+            <div id="errorMsg" class="error-msg">Documento incorreto. Acesso negado.</div>
         </div>
         
         <button id="btnUnlock">Desbloquear Proposta</button>
@@ -168,13 +168,23 @@
                 return;
             }
 
-            // Máscara de CNPJ básica
+            // Máscara de CPF/CNPJ
             cnpjInput.addEventListener('input', (e) => {
                 let val = e.target.value.replace(/\D/g, '');
-                if (val.length > 2) val = val.substring(0,2) + '.' + val.substring(2);
-                if (val.length > 6) val = val.substring(0,6) + '.' + val.substring(6);
-                if (val.length > 10) val = val.substring(0,10) + '/' + val.substring(10);
-                if (val.length > 15) val = val.substring(0,15) + '-' + val.substring(15, 17);
+                
+                if (val.length <= 11) {
+                    // CPF
+                    if (val.length > 3) val = val.substring(0,3) + '.' + val.substring(3);
+                    if (val.length > 7) val = val.substring(0,7) + '.' + val.substring(7);
+                    if (val.length > 11) val = val.substring(0,11) + '-' + val.substring(11, 13);
+                } else {
+                    // CNPJ
+                    if (val.length > 2) val = val.substring(0,2) + '.' + val.substring(2);
+                    if (val.length > 6) val = val.substring(0,6) + '.' + val.substring(6);
+                    if (val.length > 10) val = val.substring(0,10) + '/' + val.substring(10);
+                    if (val.length > 15) val = val.substring(0,15) + '-' + val.substring(15, 17);
+                }
+                
                 e.target.value = val;
             });
 
@@ -222,11 +232,11 @@
                 }
             }, 600); // Pequeno atraso para o visual do spinner
 
-            // Passo 2: Tentar chave privada (CNPJ)
+            // Passo 2: Tentar chave privada (CPF/CNPJ)
             btnUnlock.addEventListener('click', () => {
                 const cleanCnpj = cnpjInput.value.replace(/\D/g, '');
-                if (cleanCnpj.length < 14) {
-                    errorMsg.textContent = "Digite um CNPJ válido (14 números).";
+                if (cleanCnpj.length !== 11 && cleanCnpj.length !== 14) {
+                    errorMsg.textContent = "Digite um CPF (11) ou CNPJ (14) válido.";
                     errorMsg.style.display = 'block';
                     return;
                 }
@@ -243,7 +253,7 @@
                         renderProposal(privateDecrypted);
                     } else {
                         // Senha Incorreta
-                        errorMsg.textContent = "CNPJ incorreto. Acesso negado.";
+                        errorMsg.textContent = "Documento incorreto. Acesso negado.";
                         errorMsg.style.display = 'block';
                         btnUnlock.textContent = 'Desbloquear Proposta';
                         btnUnlock.style.opacity = '1';
