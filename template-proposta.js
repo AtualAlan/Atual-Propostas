@@ -6,8 +6,20 @@ const getProposalTemplate = (data) => {
         if (!isNaN(parsed)) totalImplCost += parsed;
     }
 
+    const includedTools = [];
+    const additionalTools = [];
+
     if (Array.isArray(data.tools)) {
         data.tools.forEach(t => {
+            const hasMensal = t.priceMensal && t.priceMensal !== '0,00' && t.priceMensal !== '';
+            const hasImpl = t.priceImpl && t.priceImpl !== '0,00' && t.priceImpl !== '' && !t.sumImpl;
+
+            if (hasMensal || hasImpl) {
+                additionalTools.push(t);
+            } else {
+                includedTools.push(t);
+            }
+
             if (t.priceImpl && t.sumImpl) {
                 const rawVal = t.priceImpl.replace(/[^\d,]/g, '').replace(',', '.');
                 const parsed = parseFloat(rawVal);
@@ -17,18 +29,14 @@ const getProposalTemplate = (data) => {
     }
     const finalImplCostStr = totalImplCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // Generate tools list
-    const toolsHtml = data.tools.map(tool => `
+    // Generate included tools list
+    const toolsHtml = includedTools.map(tool => `
         <details class="tool-accordion">
             <summary class="tool-summary" style="position: relative;">
                 <div style="display: flex; align-items: center; gap: 12px; padding-right: 30px;">
                     ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; flex-shrink: 0;">` : `<span style="color: #00A886; font-size: 20px; flex-shrink: 0;">✓</span>`}
                     <div style="display: flex; flex-direction: column; gap: 4px;">
                         <span style="font-weight: 600; color: #252F35; font-size: 15px;">${tool.name}</span>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            ${tool.priceMensal && tool.priceMensal !== '0,00' ? `<span style="background: rgba(0,168,134,0.1); color: #00A886; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; width: fit-content;">+ R$ ${tool.priceMensal}/mês</span>` : ''}
-                            ${tool.priceImpl && tool.priceImpl !== '0,00' && !tool.sumImpl ? `<span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; width: fit-content;">Implantação: R$ ${tool.priceImpl}</span>` : ''}
-                        </div>
                     </div>
                 </div>
                 <span class="chevron" style="position: absolute; right: 16px; top: 18px;">▼</span>
@@ -39,6 +47,30 @@ const getProposalTemplate = (data) => {
             </div>
         </details>
     `).join('');
+
+    // Generate additional tools list
+    const additionalToolsHtml = additionalTools.length > 0 ? additionalTools.map(tool => `
+        <div class="card" style="border-left: 4px solid #ef4444; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">` : `<span style="color: #ef4444; font-size: 20px;">+</span>`}
+                    <span style="font-weight: 600; color: #252F35; font-size: 16px;">${tool.name}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    ${tool.priceMensal && tool.priceMensal !== '0,00' ? `<span style="background: #fef2f2; color: #ef4444; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 700; border: 1px solid #fecaca;">+ R$ ${tool.priceMensal}/mês</span>` : ''}
+                    ${tool.priceImpl && tool.priceImpl !== '0,00' && !tool.sumImpl ? `<span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid #e2e8f0;">Implantação: R$ ${tool.priceImpl}</span>` : ''}
+                </div>
+            </div>
+            <div style="color: #475569; font-size: 14px; line-height: 1.6;">
+                ${tool.desc}
+            </div>
+        </div>
+    `).join('') : '';
+
+    const additionalToolsSection = additionalTools.length > 0 ? `
+        <h2 class="section-title" style="margin-top: 40px; color: #ef4444; font-size: 20px;">Ferramentas Adicionais Contratadas</h2>
+        ${additionalToolsHtml}
+    ` : '';
 
     return `
     <!DOCTYPE html>
@@ -397,6 +429,8 @@ const getProposalTemplate = (data) => {
                         <p class="price-value">R$ ${data.monthlyFee}</p>
                     </div>
                 </div>
+                
+                ${additionalToolsSection}
 
                 <h2 class="section-title">Termos e Condições</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
