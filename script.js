@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div id="opts-${t.id}" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 120px;">
-                            <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Mensalidade (R$)</label>
-                            <input type="text" id="price-mensal-${t.id}" class="form-control" placeholder="Ex: 50,00" style="padding: 6px; font-size: 13px; height: auto;">
-                        </div>
-                        <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Implantação (R$)</label>
                             <input type="text" id="price-impl-${t.id}" class="form-control" placeholder="Ex: 100,00" style="padding: 6px; font-size: 13px; height: auto;">
+                        </div>
+                        <div style="flex: 1; min-width: 120px;">
+                            <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Mensalidade (R$)</label>
+                            <input type="text" id="price-mensal-${t.id}" class="form-control" placeholder="Ex: 50,00" style="padding: 6px; font-size: 13px; height: auto;">
                         </div>
                     </div>
                     <div style="margin-top: 8px;">
@@ -364,4 +364,50 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // -- INÍCIO: PREENCHIMENTO AUTOMÁTICO PARA TESTES --
+    // TODO: O usuário pedirá para remover isso depois
+    setTimeout(() => {
+        // Preencher dados básicos
+        if (document.getElementById('clientName')) document.getElementById('clientName').value = "Empresa de Teste Ltda";
+        if (document.getElementById('contactName')) document.getElementById('contactName').value = "Alan";
+        if (document.getElementById('implTime')) document.getElementById('implTime').value = "15 a 20 dias úteis";
+        if (document.getElementById('migratedSystem')) document.getElementById('migratedSystem').value = "Sistema Concorrente";
+        if (document.getElementById('implCost')) document.getElementById('implCost').value = "2.500,00";
+        if (document.getElementById('monthlyFee')) document.getElementById('monthlyFee').value = "350,00";
+        if (document.getElementById('hasMigration')) document.getElementById('hasMigration').checked = true;
+
+        // Selecionar o primeiro segmento
+        if (segmentSelect && dbSegments.length > 0) {
+            segmentSelect.value = dbSegments[0].id;
+            segmentSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Marcar todas as ferramentas
+        document.querySelectorAll('.tool-checkbox').forEach(cb => {
+            if (!cb.checked) {
+                cb.checked = true;
+                cb.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Adicionar valores extras na primeira ferramenta para ela ir para "Módulos Adicionais"
+        if (dbTools.length > 0) {
+            const firstToolId = dbTools[0].id;
+            const implInput = document.getElementById(`price-impl-${firstToolId}`);
+            const mensalInput = document.getElementById(`price-mensal-${firstToolId}`);
+            const sumImplCheck = document.getElementById(`sum-impl-${firstToolId}`);
+            
+            if (implInput) implInput.value = "1.000,00";
+            if (mensalInput) mensalInput.value = "200,00";
+            if (sumImplCheck) sumImplCheck.checked = false; // Isso garante que a implantação extra não some ao total base, forçando-a ser Adicional
+        }
+
+        // Simular o clique de gerar a proposta automaticamente
+        if (form) {
+            form.dispatchEvent(new Event('submit'));
+        }
+    }, 500);
+    // -- FIM: PREENCHIMENTO AUTOMÁTICO PARA TESTES --
+
 });

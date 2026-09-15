@@ -49,26 +49,35 @@ const getProposalTemplate = (data) => {
     `).join('');
 
     // Generate additional tools list
-    const additionalToolsHtml = additionalTools.length > 0 ? additionalTools.map(tool => `
-        <div class="card" style="border-left: 4px solid #ef4444; margin-bottom: 15px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 10px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">` : `<span style="color: #ef4444; font-size: 20px;">+</span>`}
-                    <span style="font-weight: 600; color: #252F35; font-size: 16px;">${tool.name}</span>
+    const additionalToolsHtml = additionalTools.length > 0 ? additionalTools.map(tool => {
+        const cleanMensal = tool.priceMensal ? parseFloat(tool.priceMensal.replace(/[^\d,]/g, '').replace(',', '.')) || 0 : 0;
+        const cleanImpl = (tool.priceImpl && !tool.sumImpl) ? parseFloat(tool.priceImpl.replace(/[^\d,]/g, '').replace(',', '.')) || 0 : 0;
+        
+        return `
+        <details class="tool-accordion" style="border-left: 4px solid #00A886; margin-bottom: 15px;">
+            <summary class="tool-summary" style="position: relative;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-right: 30px; width: 100%;">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; margin: 0; padding: 5px 0;" onclick="event.stopPropagation()">
+                        <input type="checkbox" class="additional-module-cb" data-impl="${cleanImpl}" data-mensal="${cleanMensal}" style="width: 22px; height: 22px; cursor: pointer; accent-color: #00A886;" title="Adicionar à proposta">
+                        ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">` : `<span style="color: #00A886; font-size: 20px;">+</span>`}
+                        <span style="font-weight: 600; color: #252F35; font-size: 15px; user-select: none;">${tool.name}</span>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        ${tool.priceImpl && tool.priceImpl !== '0,00' && !tool.sumImpl ? `<span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid #e2e8f0;">Implantação: R$ ${tool.priceImpl}</span>` : ''}
+                        ${tool.priceMensal && tool.priceMensal !== '0,00' ? `<span style="background: rgba(0,168,134,0.1); color: #00A886; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; border: 1px solid rgba(0,168,134,0.3);">+ R$ ${tool.priceMensal}/mês</span>` : ''}
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    ${tool.priceMensal && tool.priceMensal !== '0,00' ? `<span style="background: #fef2f2; color: #ef4444; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 700; border: 1px solid #fecaca;">+ R$ ${tool.priceMensal}/mês</span>` : ''}
-                    ${tool.priceImpl && tool.priceImpl !== '0,00' && !tool.sumImpl ? `<span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid #e2e8f0;">Implantação: R$ ${tool.priceImpl}</span>` : ''}
-                </div>
-            </div>
-            <div style="color: #475569; font-size: 14px; line-height: 1.6;">
+                <span class="chevron" style="position: absolute; right: 16px; top: 18px;">▼</span>
+            </summary>
+            <div class="tool-desc">
                 ${tool.desc}
+                ${tool.link ? `<div style="margin-top: 10px;"><a href="${tool.link}" target="_blank" style="display: inline-block; padding: 6px 12px; background: rgba(0,168,134,0.1); color: #00A886; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 600; transition: background 0.2s;">Saiba Mais →</a></div>` : ''}
             </div>
-        </div>
-    `).join('') : '';
+        </details>
+    `}).join('') : '';
 
     const additionalToolsSection = additionalTools.length > 0 ? `
-        <h2 class="section-title" style="margin-top: 40px; color: #ef4444; font-size: 20px;">Ferramentas Adicionais Contratadas</h2>
+        <h2 class="section-title" style="margin-top: 40px; color: #00A886; font-size: 20px;">Módulos Adicionais (Opcionais)</h2>
         ${additionalToolsHtml}
     ` : '';
 
@@ -421,12 +430,12 @@ const getProposalTemplate = (data) => {
                 <div class="price-box">
                     <div class="price-item">
                         <span class="price-label">Taxa de Implantação${data.hasMigration ? ' e Migração' : ''}</span>
-                        <p class="price-value">R$ ${finalImplCostStr}</p>
+                        <p class="price-value">R$ <span id="total-impl-display">${finalImplCostStr}</span></p>
                         <p style="font-size: 13px; opacity: 0.8; margin-top: 10px;">Tempo estimado: ${data.implTime}</p>
                     </div>
                     <div class="price-item secondary">
                         <span class="price-label">Mensalidade (Licença e Suporte)</span>
-                        <p class="price-value">R$ ${data.monthlyFee}</p>
+                        <p class="price-value">R$ <span id="total-mensal-display">${data.monthlyFee}</span></p>
                     </div>
                 </div>
                 
@@ -459,6 +468,46 @@ const getProposalTemplate = (data) => {
         <script>
             // Scripts nativos removidos. As abas agora funcionam via CSS puro 
             // garantindo 100% de compatibilidade em visualizadores de e-mail e WhatsApp.
+            
+            // Script para soma dinâmica de Módulos Adicionais
+            const initInteractiveMath = () => {
+                const baseImpl = parseFloat("${finalImplCostStr}".replace(/[^\\d,]/g, '').replace(',', '.')) || 0;
+                const baseMensal = parseFloat("${data.monthlyFee}".replace(/[^\\d,]/g, '').replace(',', '.')) || 0;
+                
+                const implDisplay = document.getElementById('total-impl-display');
+                const mensalDisplay = document.getElementById('total-mensal-display');
+                const checkboxes = document.querySelectorAll('.additional-module-cb');
+                
+                const formatBRL = (val) => val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                
+                const updateTotal = () => {
+                    let totalImpl = baseImpl;
+                    let totalMensal = baseMensal;
+                    
+                    checkboxes.forEach(cb => {
+                        if(cb.checked) {
+                            totalImpl += parseFloat(cb.getAttribute('data-impl')) || 0;
+                            totalMensal += parseFloat(cb.getAttribute('data-mensal')) || 0;
+                        }
+                    });
+                    
+                    if(implDisplay) implDisplay.textContent = formatBRL(totalImpl);
+                    if(mensalDisplay) mensalDisplay.textContent = formatBRL(totalMensal);
+                };
+                
+                checkboxes.forEach(cb => {
+                    cb.addEventListener('change', updateTotal);
+                    // Backup event for older mobile webviews
+                    cb.addEventListener('click', updateTotal); 
+                });
+            };
+
+            // Garantir que roda independente de quando o HTML terminar de carregar (no mobile às vezes o DOMContentLoaded não dispara)
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initInteractiveMath);
+            } else {
+                initInteractiveMath();
+            }
         </script>
     </body>
     </html>

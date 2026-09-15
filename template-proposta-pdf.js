@@ -46,15 +46,15 @@ const getProposalTemplatePDF = (data) => {
 
     // Ferramentas Adicionais
     const additionalToolsHtml = additionalTools.length > 0 ? additionalTools.map(tool => `
-        <div class="card" style="border-left: 4px solid #ef4444; margin-bottom: 15px; page-break-inside: avoid;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 10px;">
+        <div class="card" style="border-left: 4px solid #00A886; margin-bottom: 15px; page-break-inside: avoid;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">` : `<span style="color: #ef4444; font-size: 20px;">+</span>`}
+                    ${tool.img ? `<img src="${tool.img}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">` : `<span style="color: #00A886; font-size: 20px;">+</span>`}
                     <span style="font-weight: 600; color: #252F35; font-size: 16px;">${tool.name}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    ${tool.priceMensal && tool.priceMensal !== '0,00' ? `<span style="background: #fef2f2; color: #ef4444; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 700; border: 1px solid #fecaca;">+ R$ ${tool.priceMensal}/mês</span>` : ''}
                     ${tool.priceImpl && tool.priceImpl !== '0,00' && !tool.sumImpl ? `<span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid #e2e8f0;">Implantação: R$ ${tool.priceImpl}</span>` : ''}
+                    ${tool.priceMensal && tool.priceMensal !== '0,00' ? `<span style="background: rgba(0,168,134,0.1); color: #00A886; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 700; border: 1px solid rgba(0,168,134,0.3);">+ R$ ${tool.priceMensal}/mês</span>` : ''}
                 </div>
             </div>
             <div style="color: #475569; font-size: 14px; line-height: 1.6;">
@@ -64,7 +64,7 @@ const getProposalTemplatePDF = (data) => {
     `).join('') : '';
 
     const additionalToolsSection = additionalTools.length > 0 ? `
-        <h2 class="section-title" style="margin-top: 40px; color: #ef4444; font-size: 20px;">Ferramentas Adicionais Contratadas</h2>
+        <h2 class="section-title" style="margin-top: 40px; color: #00A886; font-size: 20px;">Módulos Adicionais (Opcionais)</h2>
         ${additionalToolsHtml}
     ` : '';
 
