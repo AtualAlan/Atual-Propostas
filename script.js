@@ -255,14 +255,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!baseUrl.endsWith('/')) baseUrl += '/';
             const finalUrl = `${baseUrl}proposta.html?data=${encodeURIComponent(encrypted)}`;
             
-            // Copiar para a área de transferência
-            navigator.clipboard.writeText(finalUrl).then(() => {
-                const originalText = btnCopyLink.innerHTML;
-                btnCopyLink.innerHTML = "✅ Link Copiado!";
-                setTimeout(() => btnCopyLink.innerHTML = originalText, 2000);
-            }).catch(err => {
-                alert("Erro ao copiar o link. Tente novamente.");
-            });
+            btnCopyLink.innerHTML = "⏳ Gerando Link Curto...";
+            
+            // Encurtar a URL usando is.gd via JSONP (Bypass de CORS)
+            const script = document.createElement('script');
+            const callbackName = 'isgd_callback_' + Math.round(100000 * Math.random());
+            
+            window[callbackName] = function(responseData) {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                
+                // Se falhar o encurtamento, usa a URL longa como fallback
+                let shortUrl = finalUrl;
+                if(responseData && responseData.shorturl) {
+                    shortUrl = responseData.shorturl;
+                }
+                
+                // Copiar para a área de transferência
+                navigator.clipboard.writeText(shortUrl).then(() => {
+                    btnCopyLink.innerHTML = "✅ Link Copiado!";
+                    setTimeout(() => btnCopyLink.innerHTML = "🔗 Copiar Link Web", 2500);
+                }).catch(err => {
+                    alert("Erro ao copiar o link. Tente copiar manualmente da barra.");
+                    btnCopyLink.innerHTML = "🔗 Copiar Link Web";
+                });
+            };
+            
+            script.src = `https://is.gd/create.php?format=json&url=${encodeURIComponent(finalUrl)}&callback=${callbackName}`;
+            document.body.appendChild(script);
         });
     }
 
