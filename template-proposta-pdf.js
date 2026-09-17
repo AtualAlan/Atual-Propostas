@@ -64,7 +64,9 @@ const getProposalTemplatePDF = (data) => {
     `).join('') : '';
 
     const additionalToolsSection = additionalTools.length > 0 ? `
-        <h2 class="section-title" style="margin-top: 40px; color: #00A886; font-size: 20px;">Módulos Adicionais (Opcionais)</h2>
+        <div style="page-break-inside: avoid;">
+            <h2 class="section-title" style="margin-top: 40px; color: #00A886; font-size: 20px; border-bottom: none; padding-bottom: 0;">Módulos Adicionais (Opcionais)</h2>
+        </div>
         ${additionalToolsHtml}
     ` : '';
 
@@ -151,30 +153,34 @@ const getProposalTemplatePDF = (data) => {
                     </ul>
                 </div>
 
-                <h2 class="section-title">Investimento</h2>
-                <div class="price-box">
-                    <div class="price-item">
-                        <span class="price-label">Taxa de Implantação${data.hasMigration ? ' e Migração' : ''}</span>
-                        <p class="price-value">R$ ${finalImplCostStr}</p>
-                        <p style="font-size: 13px; opacity: 0.8; margin-top: 10px;">Tempo estimado: ${data.implTime}</p>
-                    </div>
-                    <div class="price-item secondary">
-                        <span class="price-label">Mensalidade (Licença e Suporte)</span>
-                        <p class="price-value">R$ ${data.monthlyFee}</p>
+                <div style="page-break-inside: avoid;">
+                    <h2 class="section-title">Investimento</h2>
+                    <div class="price-box">
+                        <div class="price-item">
+                            <span class="price-label">Taxa de Implantação${data.hasMigration ? ' e Migração' : ''}</span>
+                            <p class="price-value">R$ ${finalImplCostStr}</p>
+                            <p style="font-size: 13px; opacity: 0.8; margin-top: 10px;">Tempo estimado: ${data.implTime}</p>
+                        </div>
+                        <div class="price-item secondary">
+                            <span class="price-label">Mensalidade (Licença e Suporte)</span>
+                            <p class="price-value">R$ ${data.monthlyFee}</p>
+                        </div>
                     </div>
                 </div>
                 
                 ${additionalToolsSection}
 
-                <h2 class="section-title">Termos e Condições</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                    <div class="card" style="margin-bottom: 0;">
-                        <h4 style="margin-top: 0; color: #00A886;">💳 Forma de Pagamento</h4>
-                        <p style="font-size: 14px; color: #475569;"><strong>Implantação:</strong> Pagamento via Pix ou Cartão de Crédito.<br><br><strong>Mensalidade:</strong> Pagamento recorrente a partir do mês seguinte à conclusão da implantação. <em>Reajuste anual baseado no percentual de variação do IGPM.</em></p>
-                    </div>
-                    <div class="card" style="margin-bottom: 0;">
-                        <h4 style="margin-top: 0; color: #00A886;">🎧 Suporte Técnico</h4>
-                        <p style="font-size: 14px; color: #475569;"><strong>Horário Comercial:</strong> Seg a Sex das 8h às 18h. Sábados das 8h às 11:45h.<br><br><strong>Plantões (Remoto):</strong> Seg a Sex das 18h às 22h. Sábados das 12h às 18h. Domingos das 8h às 12h.</p>
+                <div style="page-break-inside: avoid;">
+                    <h2 class="section-title">Termos e Condições</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="card" style="margin-bottom: 0;">
+                            <h4 style="margin-top: 0; color: #00A886;">💳 Forma de Pagamento</h4>
+                            <p style="font-size: 14px; color: #475569;"><strong>Implantação:</strong> Pagamento via Pix ou Cartão de Crédito.<br><br><strong>Mensalidade:</strong> Pagamento recorrente a partir do mês seguinte à conclusão da implantação. <em>Reajuste anual baseado no percentual de variação do IGPM.</em></p>
+                        </div>
+                        <div class="card" style="margin-bottom: 0;">
+                            <h4 style="margin-top: 0; color: #00A886;">🎧 Suporte Técnico</h4>
+                            <p style="font-size: 14px; color: #475569;"><strong>Horário Comercial:</strong> Seg a Sex das 8h às 18h. Sábados das 8h às 11:45h.<br><br><strong>Plantões (Remoto):</strong> Seg a Sex das 18h às 22h. Sábados das 12h às 18h. Domingos das 8h às 12h.</p>
+                        </div>
                     </div>
                 </div>
 
