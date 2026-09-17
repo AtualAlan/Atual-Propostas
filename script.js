@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
                         </div>
                     </div>
-                    <div id="legend-${safeId}" style="display: none; font-size: 0.75rem; color: var(--primary-green); font-weight: 500; text-align: right; margin-top: 8px; margin-right: 2px;"></div>
+                    <div id="legend-${safeId}" style="display: none; font-size: 11px; color: var(--primary-green); font-weight: 600; text-align: right; margin-top: 8px; margin-right: 4px; white-space: nowrap; letter-spacing: -0.2px;"></div>
                 </div>
                 <div id="opts-${safeId}" class="tool-opts-panel" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
