@@ -72,18 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const safeId = getSafeId(t.id);
             return `
             <div class="tool-config-card" id="card-tool-${safeId}" style="display: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: rgba(0,0,0,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                <div style="display: flex; align-items: center; padding: 14px 16px; justify-content: space-between;">
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                <div style="padding: 12px 14px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${safeId}" style="display: none;">
                             <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">${t.name}</span>
                         </div>
-                        <span id="legend-${safeId}" style="display: none; font-size: 0.75rem; color: var(--primary-green); font-weight: 500; margin-left: 2px;"></span>
+                        <div style="display: flex; gap: 4px;">
+                            <button type="button" id="gear-${safeId}" title="Configurar Preço" onclick="window.toggleToolOpts('${safeId}')" style="background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; color: var(--text-muted); transition: all 0.2s;">⚙️</button>
+                            <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button type="button" id="gear-${safeId}" title="Configurar Preço" onclick="window.toggleToolOpts('${safeId}')" style="background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; color: var(--text-muted); transition: all 0.2s;">⚙️</button>
-                        <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
-                    </div>
+                    <div id="legend-${safeId}" style="display: none; font-size: 0.75rem; color: var(--primary-green); font-weight: 500; text-align: right; margin-top: 8px; margin-right: 2px;"></div>
                 </div>
                 <div id="opts-${safeId}" class="tool-opts-panel" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
