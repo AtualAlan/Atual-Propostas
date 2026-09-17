@@ -165,13 +165,14 @@ const login = (email, password) => {
     if (!user) throw new Error("E-mail ou senha incorretos.");
     if (user.status !== 'aprovado') throw new Error("Seu cadastro ainda não foi aprovado pelo administrador.");
     
-    // Salva a sessão
+    // Salva a sessão com timestamp
     localStorage.setItem(SESSION_KEY, JSON.stringify({
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
-        teamIds: user.teamIds || []
+        teamIds: user.teamIds || [],
+        timestamp: Date.now()
     }));
     
     return user;
@@ -183,8 +184,23 @@ const logout = () => {
 };
 
 const getSession = () => {
-    const session = localStorage.getItem(SESSION_KEY);
-    return session ? JSON.parse(session) : null;
+    const sessionStr = localStorage.getItem(SESSION_KEY);
+    if (!sessionStr) return null;
+    
+    const session = JSON.parse(sessionStr);
+    
+    // Expira a sessão se passar mais de 12 horas (12 * 60 * 60 * 1000 ms)
+    const MAX_AGE = 12 * 60 * 60 * 1000;
+    if (session.timestamp && (Date.now() - session.timestamp > MAX_AGE)) {
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+    }
+    
+    // Renova o timestamp (mantém logado enquanto estiver usando)
+    session.timestamp = Date.now();
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    
+    return session;
 };
 
 const requireAuth = () => {
