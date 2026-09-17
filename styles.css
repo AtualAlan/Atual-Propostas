@@ -172,6 +172,7 @@ input:focus, select:focus {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
+    align-items: start; /* Impede que um card estique o outro na mesma linha */
 }
 
 .checkbox-label {
