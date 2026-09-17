@@ -17,6 +17,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função auxiliar para criar IDs seguros para o HTML
     const getSafeId = (id) => id.replace(/[^a-zA-Z0-9]/g, '_');
 
+    // Funções globais para controle dos cards
+    window.updateToolVisuals = (safeId) => {
+        const implInput = document.getElementById(`price-impl-${safeId}`);
+        const mensalInput = document.getElementById(`price-mensal-${safeId}`);
+        const gearBtn = document.getElementById(`gear-${safeId}`);
+        const legendText = document.getElementById(`legend-${safeId}`);
+        
+        if (!implInput || !mensalInput || !gearBtn || !legendText) return;
+        
+        const hasImpl = implInput.value.trim() !== '';
+        const hasMensal = mensalInput.value.trim() !== '';
+        
+        if (hasImpl || hasMensal) {
+            gearBtn.style.color = 'var(--primary-green)';
+            gearBtn.style.background = 'rgba(0, 168, 134, 0.1)';
+            gearBtn.style.borderColor = 'rgba(0, 168, 134, 0.3)';
+            
+            let legend = [];
+            if(hasImpl) legend.push(`Impl: R$ ${implInput.value}`);
+            if(hasMensal) legend.push(`Men: R$ ${mensalInput.value}`);
+            legendText.innerHTML = legend.join(' | ');
+            legendText.style.display = 'block';
+        } else {
+            gearBtn.style.color = 'var(--text-muted)';
+            gearBtn.style.background = 'rgba(255,255,255,0.05)';
+            gearBtn.style.borderColor = 'transparent';
+            legendText.style.display = 'none';
+            legendText.innerHTML = '';
+        }
+    };
+
+    window.toggleToolOpts = (safeId) => {
+        const opts = document.getElementById(`opts-${safeId}`);
+        
+        // Auto-close: fecha outros abertos antes de abrir o atual
+        document.querySelectorAll('.tool-opts-panel').forEach(p => {
+            if (p.id !== `opts-${safeId}`) p.style.display = 'none';
+        });
+
+        opts.style.display = opts.style.display === 'none' ? 'block' : 'none';
+    };
+
+    // Auto-close ao clicar fora de qualquer card
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.tool-config-card')) {
+            document.querySelectorAll('.tool-opts-panel').forEach(p => p.style.display = 'none');
+        }
+    });
+
     // Renderiza as Ferramentas Ocultas na Grid
     const renderToolsGrid = () => {
         toolsGrid.innerHTML = dbTools.map(t => {
@@ -24,24 +73,27 @@ document.addEventListener('DOMContentLoaded', () => {
             return `
             <div class="tool-config-card" id="card-tool-${safeId}" style="display: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: rgba(0,0,0,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                 <div style="display: flex; align-items: center; padding: 14px 16px; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                        <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${safeId}" style="display: none;">
-                        <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">${t.name}</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${safeId}" style="display: none;">
+                            <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">${t.name}</span>
+                        </div>
+                        <span id="legend-${safeId}" style="display: none; font-size: 0.75rem; color: var(--primary-green); font-weight: 500; margin-left: 2px;"></span>
                     </div>
                     <div style="display: flex; gap: 4px;">
-                        <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${safeId}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.color = e.style.display === 'none' ? 'var(--text-muted)' : 'var(--primary-green)';" style="background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; color: var(--text-muted); transition: all 0.2s;">⚙️</button>
+                        <button type="button" id="gear-${safeId}" title="Configurar Preço" onclick="window.toggleToolOpts('${safeId}')" style="background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; color: var(--text-muted); transition: all 0.2s;">⚙️</button>
                         <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
                     </div>
                 </div>
-                <div id="opts-${safeId}" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
+                <div id="opts-${safeId}" class="tool-opts-panel" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Implantação (R$)</label>
-                            <input type="text" id="price-impl-${safeId}" class="form-control" placeholder="Ex: 100,00" style="padding: 6px; font-size: 13px; height: auto;">
+                            <input type="text" id="price-impl-${safeId}" class="form-control" placeholder="Ex: 100,00" oninput="window.updateToolVisuals('${safeId}')" style="padding: 6px; font-size: 13px; height: auto;">
                         </div>
                         <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Mensalidade (R$)</label>
-                            <input type="text" id="price-mensal-${safeId}" class="form-control" placeholder="Ex: 50,00" style="padding: 6px; font-size: 13px; height: auto;">
+                            <input type="text" id="price-mensal-${safeId}" class="form-control" placeholder="Ex: 50,00" oninput="window.updateToolVisuals('${safeId}')" style="padding: 6px; font-size: 13px; height: auto;">
                         </div>
                     </div>
                     <div style="margin-top: 8px;">
@@ -84,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(`price-mensal-${safeId}`).value = '';
             document.getElementById(`sum-impl-${safeId}`).checked = true;
             document.getElementById(`opts-${safeId}`).style.display = 'none';
+            window.updateToolVisuals(safeId); // Reset legend and gear color
         }
         updateToolSelector();
     };
@@ -159,6 +212,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (card) {
                             card.style.display = isSelected ? 'block' : 'none';
                         }
+                        
+                        // Load custom configs if any
+                        if (data.toolConfigs) {
+                            const tConfig = data.toolConfigs.find(tc => tc.id === cb.value);
+                            if (tConfig) {
+                                const elImpl = document.getElementById(`price-impl-${safeId}`);
+                                const elMensal = document.getElementById(`price-mensal-${safeId}`);
+                                const elSum = document.getElementById(`sum-impl-${safeId}`);
+                                if (elImpl) elImpl.value = tConfig.impl || '';
+                                if (elMensal) elMensal.value = tConfig.mensal || '';
+                                if (elSum) elSum.checked = tConfig.sumImpl;
+                            }
+                        }
+                        window.updateToolVisuals(safeId); // Refresh the UI immediately
                     });
                 }
                 
@@ -194,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById(`price-impl-${safeId}`).value = '';
                     document.getElementById(`price-mensal-${safeId}`).value = '';
                     document.getElementById(`opts-${safeId}`).style.display = 'none';
+                    window.updateToolVisuals(safeId);
                 }
             }
         });
