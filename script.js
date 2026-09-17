@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `}).join('');
     };
     renderToolsGrid();
+    segmentSelect.value = ""; // Garante que comece vazio ignorando cache do navegador
     
     // Atualiza as opções do Dropdown (Menu Oculto)
     const updateToolSelector = () => {
@@ -159,14 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             card.style.display = isSelected ? 'block' : 'none';
                         }
                     });
-                    
-                    updateToolSelector();
                 }
                 
                 // Auto preview after a small delay to ensure DOM is ready
                 setTimeout(() => document.getElementById('btnPreview').click(), 100);
             }
         }
+        
+        // Sempre popula o dropdown, independente de ter carregado ou não
+        updateToolSelector();
     };
     loadSavedData();
 
