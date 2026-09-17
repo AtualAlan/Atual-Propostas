@@ -14,16 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
     segmentSelect.innerHTML = `<option value="" disabled selected>Selecione um segmento...</option>` + 
         dbSegments.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         
-    // Renderiza as Ferramentas
+    // Renderiza as Ferramentas Ocultas na Grid
     const renderToolsGrid = () => {
         toolsGrid.innerHTML = dbTools.map(t => `
-            <div class="tool-config-card" style="border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: var(--bg-card);">
+            <div class="tool-config-card" id="card-tool-${t.id}" style="display: none; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: var(--panel-bg);">
                 <div style="display: flex; align-items: center; padding: 12px; justify-content: space-between;">
-                    <label class="checkbox-item" style="margin: 0; padding: 0; border: none; background: transparent; flex: 1;">
-                        <input type="checkbox" name="tools" value="${t.id}">
-                        <span>${t.name}</span>
-                    </label>
-                    <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${t.id}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.opacity = e.style.display === 'none' ? '0.5' : '1';" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; opacity: 0.5; transition: opacity 0.2s;">⚙️</button>
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${t.id}" style="display: none;">
+                        <span style="font-weight: 600; font-size: 14px; color: var(--text-main);">${t.name}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${t.id}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.opacity = e.style.display === 'none' ? '0.5' : '1';" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; opacity: 0.5; transition: opacity 0.2s;">⚙️</button>
+                        <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
+                    </div>
                 </div>
                 <div id="opts-${t.id}" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -47,6 +50,51 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     };
     renderToolsGrid();
+    
+    // Atualiza as opções do Dropdown (Menu Oculto)
+    const updateToolSelector = () => {
+        const toolSelector = document.getElementById('toolSelector');
+        toolSelector.innerHTML = '<option value="" disabled selected>Escolha um módulo para adicionar...</option>';
+        
+        dbTools.forEach(t => {
+            const chk = document.getElementById(`chk-tool-${t.id}`);
+            if (chk && !chk.checked) {
+                toolSelector.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+            }
+        });
+    };
+    
+    // Remove ferramenta e devolve pro dropdown
+    window.removeTool = (id) => {
+        const chk = document.getElementById(`chk-tool-${id}`);
+        const card = document.getElementById(`card-tool-${id}`);
+        if (chk && card) {
+            chk.checked = false;
+            card.style.display = 'none';
+            // Limpa os valores ao remover
+            document.getElementById(`price-impl-${id}`).value = '';
+            document.getElementById(`price-mensal-${id}`).value = '';
+            document.getElementById(`sum-impl-${id}`).checked = true;
+            document.getElementById(`opts-${id}`).style.display = 'none';
+        }
+        updateToolSelector();
+    };
+    
+    // Adiciona ferramenta pelo dropdown
+    document.getElementById('btnAddTool').addEventListener('click', () => {
+        const toolSelector = document.getElementById('toolSelector');
+        const selectedId = toolSelector.value;
+        
+        if (selectedId) {
+            const chk = document.getElementById(`chk-tool-${selectedId}`);
+            const card = document.getElementById(`card-tool-${selectedId}`);
+            if (chk && card) {
+                chk.checked = true;
+                card.style.display = 'block';
+            }
+            updateToolSelector();
+        }
+    });
     
     const checkboxes = toolsGrid.querySelectorAll('input[type="checkbox"]');
     
@@ -94,8 +142,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.tools && Array.isArray(data.tools)) {
                     const toolIds = data.tools.map(t => t.id);
                     checkboxes.forEach(cb => {
-                        cb.checked = toolIds.includes(cb.value);
+                        const isSelected = toolIds.includes(cb.value);
+                        cb.checked = isSelected;
+                        
+                        const card = document.getElementById(`card-tool-${cb.value}`);
+                        if (card) {
+                            card.style.display = isSelected ? 'block' : 'none';
+                        }
                     });
+                    
+                    updateToolSelector();
                 }
                 
                 // Auto preview after a small delay to ensure DOM is ready
@@ -114,8 +170,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!segment) return;
         
         checkboxes.forEach(cb => {
-            cb.checked = segment.defaultTools.includes(cb.value);
+            const isRecommended = segment.defaultTools.includes(cb.value);
+            cb.checked = isRecommended;
+            
+            const card = document.getElementById(`card-tool-${cb.value}`);
+            if (card) {
+                card.style.display = isRecommended ? 'block' : 'none';
+                
+                // Se foi ocultado, limpa os valores
+                if (!isRecommended) {
+                    document.getElementById(`price-impl-${cb.value}`).value = '';
+                    document.getElementById(`price-mensal-${cb.value}`).value = '';
+                    document.getElementById(`opts-${cb.value}`).style.display = 'none';
+                }
+            }
         });
+        
+        updateToolSelector();
     });
 
     // Calculadora Mágica Bidirecional (Salário Mínimo)
