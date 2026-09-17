@@ -722,3 +722,28 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Erro ao popular dados fictícios:', e);
     }
 })();
+
+// ==========================================
+// INJEÇÃO GLOBAL DE UI (Perfil do Usuário)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const session = getSession();
+    if (session && document.getElementById('globalSidebar')) {
+        const firstName = session.name.split(' ')[0];
+        const initial = firstName.charAt(0).toUpperCase();
+        
+        const brandDiv = document.querySelector('.sidebar-brand');
+        if (brandDiv) {
+            const profileHtml = `
+                <div class="user-profile-widget" onclick="window.location.href='profile.html'" style="display: flex; align-items: center; gap: 10px; margin: 15px 10px 10px 10px; padding: 8px; background: rgba(0, 168, 134, 0.1); border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,168,134,0.2); overflow: hidden; transition: 0.2s;" title="Acessar Meu Perfil">
+                    <div style="min-width: 32px; height: 32px; border-radius: 50%; background: #00A886; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${initial}</div>
+                    <div class="menu-item-text" style="flex: 1; overflow: hidden; white-space: nowrap;">
+                        <div style="font-size: 11px; color: var(--text-muted); line-height: 1;">Bem-vindo(a),</div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; margin-top: 2px;">${firstName}</div>
+                    </div>
+                </div>
+            `;
+            brandDiv.insertAdjacentHTML('afterend', profileHtml);
+        }
+    }
+});
