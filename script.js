@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             </div>
-            <div id="legend-${safeId}" style="display: none; font-size: 11px; color: var(--primary-green); font-weight: 600; text-align: right; margin-top: 4px; padding-right: 8px; white-space: nowrap; letter-spacing: -0.2px;"></div>
+            <div id="legend-${safeId}" style="display: none; font-size: 11px; color: var(--primary-green); font-weight: 600; text-align: center; margin-top: 6px; white-space: nowrap; letter-spacing: -0.2px;"></div>
         </div>
         `}).join('');
     };
