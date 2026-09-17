@@ -294,8 +294,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Geração do Preview Web
     form.addEventListener('submit', (e) => {
         e.preventDefault();
+        
         const data = gatherFormData();
         
+        // Auto-Save: Garante que a proposta vá para o funil (como rascunho) mesmo se o vendedor esquecer de clicar em "Salvar"
+        try {
+            if (typeof saveProposal === 'function') {
+                const savedProp = saveProposal(data, loadedProposalId, loadedProposalStatus);
+                loadedProposalId = savedProp.id;
+                loadedProposalStatus = savedProp.status;
+                
+                // Limpa a string da URL para não duplicar se recarregar
+                const urlParams = new URLSearchParams(window.location.search);
+                if (!urlParams.has('load')) {
+                    window.history.replaceState({}, '', `index.html?load=${loadedProposalId}`);
+                }
+            }
+        } catch(err) {
+            console.warn("Falha no auto-save:", err);
+        }
+
         // Salvar localmente no LocalStorage form cache
         const saveObj = { ...data, segment: data.segmentKey };
         localStorage.setItem('proposalData', JSON.stringify(saveObj));
@@ -373,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 navigator.clipboard.writeText(shortUrl).then(() => {
                     btnCopyLink.innerHTML = "✅ Link Copiado!";
                     setTimeout(() => btnCopyLink.innerHTML = "🔗 Copiar Link Web", 2500);
+                    markAsSent();
                 }).catch(err => {
                     alert("Erro ao copiar. Tente copiar manualmente da barra.");
                     btnCopyLink.innerHTML = "🔗 Copiar Link Web";
@@ -426,6 +445,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Função unificada para auto-salvar como enviada ao exportar/compartilhar
+    const markAsSent = () => {
+        try {
+            if (typeof saveProposal === 'function' && loadedProposalId) {
+                if (!loadedProposalStatus || loadedProposalStatus === 'rascunho') {
+                    loadedProposalStatus = 'enviada';
+                    saveProposal(gatherFormData(), loadedProposalId, loadedProposalStatus);
+                }
+            }
+        } catch(e) {}
+    };
+
     // Download HTML
     btnExportHtml.addEventListener('click', () => {
         const clientName = document.getElementById('clientName').value || 'Cliente';
@@ -438,6 +469,8 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        markAsSent();
     });
 
     // Download PDF (usando html2pdf.js)
@@ -457,6 +490,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         html2pdf().set(opt).from(tempDiv).save();
+        
+        markAsSent();
     });
 
     // Toggles de visualização (Mobile/Desktop)
