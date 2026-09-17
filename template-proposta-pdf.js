@@ -91,13 +91,13 @@ const getProposalTemplatePDF = (data) => {
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
             body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #ffffff; color: #334155; line-height: 1.6; }
             .container { max-width: 800px; margin: 0 auto; background-color: #ffffff; }
-            .header { background: linear-gradient(135deg, #00A886 0%, #007860 100%); padding: 40px 20px; text-align: center; color: #ffffff; }
-            .logo { max-width: 250px; margin-bottom: 20px; }
-            .header h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
-            .content { padding: 40px 30px; }
-            .greeting { font-size: 18px; margin-bottom: 30px; }
-            .section-title { color: #252F35; font-size: 22px; font-weight: 700; margin-top: 40px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; page-break-after: avoid; }
-            .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; page-break-inside: avoid; }
+            .header { background: linear-gradient(135deg, #00A886 0%, #007860 100%); padding: 30px 10px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0; }
+            .logo { max-width: 200px; margin-bottom: 15px; }
+            .header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+            .content { padding: 30px 15px; }
+            .greeting { font-size: 16px; margin-bottom: 25px; }
+            .section-title { color: #252F35; font-size: 20px; font-weight: 700; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; page-break-after: avoid; }
+            .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; page-break-inside: avoid; }
             .highlight-text { font-size: 16px; color: #475569; }
             .price-box { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 30px; page-break-inside: avoid; }
             .price-item { flex: 1; min-width: 250px; background: #252F35; color: white; padding: 25px; border-radius: 12px; text-align: center; page-break-inside: avoid; }

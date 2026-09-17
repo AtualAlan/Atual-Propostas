@@ -552,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tempDiv.innerHTML = currentProposalPdfHtml;
         
         const opt = {
-            margin:       0,
+            margin:       0.5, // Margem de meia polegada (~1.27cm) nas bordas
             filename:     `Proposta_${clientName.replace(/\s+/g, '_')}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2, useCORS: true },
