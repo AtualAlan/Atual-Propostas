@@ -14,40 +14,45 @@ document.addEventListener('DOMContentLoaded', () => {
     segmentSelect.innerHTML = `<option value="" disabled selected>Selecione um segmento...</option>` + 
         dbSegments.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         
+    // Função auxiliar para criar IDs seguros para o HTML
+    const getSafeId = (id) => id.replace(/[^a-zA-Z0-9]/g, '_');
+
     // Renderiza as Ferramentas Ocultas na Grid
     const renderToolsGrid = () => {
-        toolsGrid.innerHTML = dbTools.map(t => `
-            <div class="tool-config-card" id="card-tool-${t.id}" style="display: none; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: var(--panel-bg);">
+        toolsGrid.innerHTML = dbTools.map(t => {
+            const safeId = getSafeId(t.id);
+            return `
+            <div class="tool-config-card" id="card-tool-${safeId}" style="display: none; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: var(--panel-bg);">
                 <div style="display: flex; align-items: center; padding: 12px; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                        <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${t.id}" style="display: none;">
+                        <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${safeId}" style="display: none;">
                         <span style="font-weight: 600; font-size: 14px; color: var(--text-main);">${t.name}</span>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${t.id}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.opacity = e.style.display === 'none' ? '0.5' : '1';" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; opacity: 0.5; transition: opacity 0.2s;">⚙️</button>
+                        <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${safeId}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.opacity = e.style.display === 'none' ? '0.5' : '1';" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; opacity: 0.5; transition: opacity 0.2s;">⚙️</button>
                         <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
                     </div>
                 </div>
-                <div id="opts-${t.id}" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
+                <div id="opts-${safeId}" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Implantação (R$)</label>
-                            <input type="text" id="price-impl-${t.id}" class="form-control" placeholder="Ex: 100,00" style="padding: 6px; font-size: 13px; height: auto;">
+                            <input type="text" id="price-impl-${safeId}" class="form-control" placeholder="Ex: 100,00" style="padding: 6px; font-size: 13px; height: auto;">
                         </div>
                         <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Mensalidade (R$)</label>
-                            <input type="text" id="price-mensal-${t.id}" class="form-control" placeholder="Ex: 50,00" style="padding: 6px; font-size: 13px; height: auto;">
+                            <input type="text" id="price-mensal-${safeId}" class="form-control" placeholder="Ex: 50,00" style="padding: 6px; font-size: 13px; height: auto;">
                         </div>
                     </div>
                     <div style="margin-top: 8px;">
                         <label style="font-size: 12px; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                            <input type="checkbox" id="sum-impl-${t.id}" checked>
+                            <input type="checkbox" id="sum-impl-${safeId}" checked>
                             Somar implantação ao total da proposta
                         </label>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     };
     renderToolsGrid();
     
@@ -57,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
         toolSelector.innerHTML = '<option value="" disabled selected>Escolha um módulo para adicionar...</option>';
         
         dbTools.forEach(t => {
-            const chk = document.getElementById(`chk-tool-${t.id}`);
+            const safeId = getSafeId(t.id);
+            const chk = document.getElementById(`chk-tool-${safeId}`);
             if (chk && !chk.checked) {
                 toolSelector.innerHTML += `<option value="${t.id}">${t.name}</option>`;
             }
@@ -66,16 +72,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Remove ferramenta e devolve pro dropdown
     window.removeTool = (id) => {
-        const chk = document.getElementById(`chk-tool-${id}`);
-        const card = document.getElementById(`card-tool-${id}`);
+        const safeId = getSafeId(id);
+        const chk = document.getElementById(`chk-tool-${safeId}`);
+        const card = document.getElementById(`card-tool-${safeId}`);
         if (chk && card) {
             chk.checked = false;
             card.style.display = 'none';
             // Limpa os valores ao remover
-            document.getElementById(`price-impl-${id}`).value = '';
-            document.getElementById(`price-mensal-${id}`).value = '';
-            document.getElementById(`sum-impl-${id}`).checked = true;
-            document.getElementById(`opts-${id}`).style.display = 'none';
+            document.getElementById(`price-impl-${safeId}`).value = '';
+            document.getElementById(`price-mensal-${safeId}`).value = '';
+            document.getElementById(`sum-impl-${safeId}`).checked = true;
+            document.getElementById(`opts-${safeId}`).style.display = 'none';
         }
         updateToolSelector();
     };
@@ -86,8 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedId = toolSelector.value;
         
         if (selectedId) {
-            const chk = document.getElementById(`chk-tool-${selectedId}`);
-            const card = document.getElementById(`card-tool-${selectedId}`);
+            const safeId = getSafeId(selectedId);
+            const chk = document.getElementById(`chk-tool-${safeId}`);
+            const card = document.getElementById(`card-tool-${safeId}`);
             if (chk && card) {
                 chk.checked = true;
                 card.style.display = 'block';
@@ -145,7 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const isSelected = toolIds.includes(cb.value);
                         cb.checked = isSelected;
                         
-                        const card = document.getElementById(`card-tool-${cb.value}`);
+                        const safeId = getSafeId(cb.value);
+                        const card = document.getElementById(`card-tool-${safeId}`);
                         if (card) {
                             card.style.display = isSelected ? 'block' : 'none';
                         }
@@ -173,15 +182,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const isRecommended = segment.defaultTools.includes(cb.value);
             cb.checked = isRecommended;
             
-            const card = document.getElementById(`card-tool-${cb.value}`);
+            const safeId = getSafeId(cb.value);
+            const card = document.getElementById(`card-tool-${safeId}`);
             if (card) {
                 card.style.display = isRecommended ? 'block' : 'none';
                 
                 // Se foi ocultado, limpa os valores
                 if (!isRecommended) {
-                    document.getElementById(`price-impl-${cb.value}`).value = '';
-                    document.getElementById(`price-mensal-${cb.value}`).value = '';
-                    document.getElementById(`opts-${cb.value}`).style.display = 'none';
+                    document.getElementById(`price-impl-${safeId}`).value = '';
+                    document.getElementById(`price-mensal-${safeId}`).value = '';
+                    document.getElementById(`opts-${safeId}`).style.display = 'none';
                 }
             }
         });
