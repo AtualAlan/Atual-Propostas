@@ -22,18 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         toolsGrid.innerHTML = dbTools.map(t => {
             const safeId = getSafeId(t.id);
             return `
-            <div class="tool-config-card" id="card-tool-${safeId}" style="display: none; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: var(--panel-bg);">
-                <div style="display: flex; align-items: center; padding: 12px; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+            <div class="tool-config-card" id="card-tool-${safeId}" style="display: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: rgba(0,0,0,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                <div style="display: flex; align-items: center; padding: 14px 16px; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                         <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${safeId}" style="display: none;">
-                        <span style="font-weight: 600; font-size: 14px; color: var(--text-main);">${t.name}</span>
+                        <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">${t.name}</span>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${safeId}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.opacity = e.style.display === 'none' ? '0.5' : '1';" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; opacity: 0.5; transition: opacity 0.2s;">⚙️</button>
-                        <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
+                    <div style="display: flex; gap: 4px;">
+                        <button type="button" title="Configurar Preço" onclick="const e = document.getElementById('opts-${safeId}'); e.style.display = e.style.display === 'none' ? 'block' : 'none'; this.style.color = e.style.display === 'none' ? 'var(--text-muted)' : 'var(--primary-green)';" style="background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; color: var(--text-muted); transition: all 0.2s;">⚙️</button>
+                        <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
                     </div>
                 </div>
-                <div id="opts-${safeId}" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
+                <div id="opts-${safeId}" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Implantação (R$)</label>
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Atualiza as opções do Dropdown (Menu Oculto)
     const updateToolSelector = () => {
         const toolSelector = document.getElementById('toolSelector');
-        toolSelector.innerHTML = '<option value="" disabled selected>Escolha um módulo para adicionar...</option>';
+        toolSelector.innerHTML = '<option value="" disabled selected>+ Adicionar Módulo / Ferramenta...</option>';
         
         dbTools.forEach(t => {
             const safeId = getSafeId(t.id);
