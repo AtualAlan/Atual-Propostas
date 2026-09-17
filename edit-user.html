@@ -21,12 +21,22 @@
                 <input type="text" id="userName">
             </div>
             <div class="form-group">
-                <label>E-mail Corporativo</label>
-                <input type="email" id="userEmail">
+                <label>E-mail</label>
+                <input type="email" id="userEmail" required>
             </div>
             <div class="form-group">
-                <label>Função no Sistema</label>
-                <select id="userRole" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);">
+                <label>Cargo na Proposta</label>
+                <select id="userJobTitle" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);">
+                    <option value="">Selecione um cargo</option>
+                    <option value="Diretor Comercial">Diretor Comercial</option>
+                    <option value="Supervisor Comercial">Supervisor Comercial</option>
+                    <option value="Executivo de Vendas">Executivo de Vendas</option>
+                    <option value="Consultor Comercial">Consultor Comercial</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Papel no Sistema</label>
+                <select id="userRole" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);">
                     <option value="vendedor">Vendedor (Padrão)</option>
                     <option value="dono_equipe">Dono de Equipe</option>
                     <option value="admin">Administrador Geral</option>
@@ -102,9 +112,10 @@
         });
 
         // Popula form
-        document.getElementById('userName').value = user.name;
-        document.getElementById('userEmail').value = user.email;
+        document.getElementById('userName').value = user.name || '';
+        document.getElementById('userEmail').value = user.email || '';
         document.getElementById('userRole').value = user.role || 'vendedor';
+        document.getElementById('userJobTitle').value = user.jobTitle || '';
 
         const statusIndicator = document.getElementById('statusIndicator');
         if (user.status === 'pending') {
@@ -134,16 +145,29 @@
             const name = document.getElementById('userName').value.trim();
             const email = document.getElementById('userEmail').value.trim();
             const role = document.getElementById('userRole').value;
-            
-            const checkboxes = document.querySelectorAll('.user-team-cb:checked');
-            const teamIds = Array.from(checkboxes).map(cb => cb.value);
-            
-            if(!name || !email) return alert("Nome e E-mail são obrigatórios.");
+            const jobTitle = document.getElementById('userJobTitle').value;
+
+            if(!name || !email || !jobTitle) {
+                alert("Preencha todos os campos obrigatórios (Nome, E-mail, Cargo).");
+                return;
+            }
+
+            const cbs = document.querySelectorAll('.user-team-cb:checked');
+            const teamIds = Array.from(cbs).map(cb => cb.value);
+
+            const updatedData = {
+                name,
+                email,
+                role,
+                jobTitle,
+                teamIds
+            };
+
             if(teamIds.length === 0) return alert("É obrigatório vincular o usuário a pelo menos uma equipe.");
             
             try {
                 // Atualiza dados básicos
-                updateUserByAdmin(user.id, name, email);
+                updateUserByAdmin(user.id, name, email, jobTitle);
                 
                 // Se estiver pendente, aprova
                 if (user.status === 'pending') {

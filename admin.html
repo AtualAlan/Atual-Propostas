@@ -113,15 +113,6 @@
             <a href="index.html" class="menu-item" style="color: var(--primary-green); font-weight: 600;">
                 <span>+</span><span class="menu-item-text">Nova Proposta</span>
             </a>
-            <a href="profile.html" class="menu-item">
-                <span>⚙️</span><span class="menu-item-text">Meu Perfil</span>
-            </a>
-            <a href="admin.html" class="menu-item active" id="adminMenuLink" style="color: #ef4444;">
-                <span>🔒</span><span class="menu-item-text">Painel Admin</span>
-            </a>
-            <div class="menu-item" style="color: #ef4444; margin-top: 1rem; border-top: 1px solid var(--border-color);" onclick="logout()">
-                <span>🚪</span><span class="menu-item-text">Sair</span>
-            </div>
         </div>
 
         <div class="main-content">
@@ -137,8 +128,7 @@
             <button class="nav-btn" data-target="tab-teams">Equipes</button>
             <button class="nav-btn" data-target="tab-settings">Configurações</button>
             <div style="flex: 1;"></div>
-            <button class="action-btn" onclick="window.location.href='profile.html'">Meu Perfil</button>
-            <button class="action-btn" onclick="logout()" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Sair</button>
+            <div style="width: 150px;"></div> <!-- Espaço para o widget de usuário do topo -->
         </div>
 
         <!-- USUÁRIOS -->
@@ -159,6 +149,25 @@
                     <input type="password" id="newUserPassword" placeholder="Senha">
                 </div>
                 <button class="btn btn-primary" id="btnCreateUser" style="padding: 0.75rem 1.5rem;">Criar Usuário</button>
+            </div>
+
+            <!-- FILTROS DE USUÁRIO -->
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <input type="text" id="searchUserInput" placeholder="Buscar usuário por nome ou email..." style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--panel-bg); color: var(--text-main);">
+                </div>
+                <div style="flex: 1; min-width: 250px; position: relative;" class="custom-dropdown" id="userTeamFilterDropdown">
+                    <button id="btnUserTeamFilter" style="width: 100%; text-align: left; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--panel-bg); color: var(--text-main); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <span id="labelUserTeamFilter">Todas as Equipes</span>
+                        <span style="font-size: 0.8rem; opacity: 0.7;">▼</span>
+                    </button>
+                    <div id="userTeamFilterContainer" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; margin-top: 5px; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-height: 250px; flex-direction: column;">
+                        <input type="text" id="searchUserTeamInput" placeholder="Buscar equipe..." style="margin: 10px; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+                        <div id="userTeamFilterList" style="overflow-y: auto; display: flex; flex-direction: column; padding: 0 10px 10px 10px; gap: 5px;">
+                            <!-- Dinâmico -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div style="overflow-x: auto;">
@@ -373,12 +382,98 @@
             }
         });
 
+        // USER FILTER STATE
+        let currentUserSearch = '';
+        let currentUserTeamFilters = [];
+
+        document.getElementById('searchUserInput').addEventListener('input', (e) => {
+            currentUserSearch = e.target.value.toLowerCase();
+            renderUsers();
+        });
+
+        document.getElementById('btnUserTeamFilter').addEventListener('click', (e) => {
+            const menu = document.getElementById('userTeamFilterContainer');
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        document.getElementById('searchUserTeamInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('#userTeamFilterList label').forEach(lbl => {
+                lbl.style.display = lbl.innerText.toLowerCase().includes(term) ? 'flex' : 'none';
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#userTeamFilterDropdown')) {
+                const el = document.getElementById('userTeamFilterContainer');
+                if(el) el.style.display = 'none';
+            }
+        });
+
+        const updateTeamFilterLabel = () => {
+            const label = document.getElementById('labelUserTeamFilter');
+            if (currentUserTeamFilters.length === 0) {
+                label.innerText = 'Todas as Equipes';
+            } else if (currentUserTeamFilters.length === 1) {
+                const tName = getTeams().find(t => t.id === currentUserTeamFilters[0])?.name || '1 Selecionada';
+                label.innerText = tName;
+            } else {
+                label.innerText = currentUserTeamFilters.length + ' Selecionadas';
+            }
+        };
+
+        const renderUserTeamDropdown = () => {
+            const list = document.getElementById('userTeamFilterList');
+            const teams = getTeams();
+            
+            // Sort teams alphabetically
+            teams.sort((a,b) => a.name.localeCompare(b.name));
+
+            list.innerHTML = teams.map(t => `
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px; font-size: 0.9rem;">
+                    <input type="checkbox" value="${t.id}" class="user-team-filter-cb" ${currentUserTeamFilters.includes(t.id) ? 'checked' : ''}>
+                    <span>${t.name}</span>
+                </label>
+            `).join('');
+
+            document.querySelectorAll('.user-team-filter-cb').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        if (!currentUserTeamFilters.includes(e.target.value)) currentUserTeamFilters.push(e.target.value);
+                    } else {
+                        currentUserTeamFilters = currentUserTeamFilters.filter(id => id !== e.target.value);
+                    }
+                    updateTeamFilterLabel();
+                    renderUsers();
+                });
+            });
+        };
+
         // RENDERIZAÇÃO DE USUÁRIOS
         const renderUsers = () => {
-            const users = getUsers();
+            let users = getUsers();
             const teams = getTeams();
             const tbody = document.getElementById('usersTableBody');
             
+            // Filter by Text Search
+            if (currentUserSearch) {
+                users = users.filter(u => 
+                    u.name.toLowerCase().includes(currentUserSearch) || 
+                    u.email.toLowerCase().includes(currentUserSearch)
+                );
+            }
+
+            // Filter by Teams
+            if (currentUserTeamFilters.length > 0) {
+                users = users.filter(u => {
+                    if (!u.teamIds || u.teamIds.length === 0) return false;
+                    return currentUserTeamFilters.some(tid => u.teamIds.includes(tid));
+                });
+            }
+
+            // Sort alphabetically by Name
+            users.sort((a, b) => a.name.localeCompare(b.name));
+
             const pendingCount = users.filter(u => u.status === 'pendente').length;
             const badge = document.getElementById('pendingBadge');
             if (pendingCount > 0) {
@@ -696,6 +791,7 @@
         });
 
         // Inicializa
+        renderUserTeamDropdown();
         renderUsers();
         renderTeams();
         initSettings();

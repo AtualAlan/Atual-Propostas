@@ -84,15 +84,25 @@
         <form id="authForm">
             <div id="registerFields">
                 <div class="form-group">
-                    <label>Nome Completo</label>
-                    <input type="text" id="nameInput" placeholder="Seu nome">
+                    <label>Nome e Sobrenome</label>
+                    <input type="text" id="nameInput" placeholder="Ex: João da Silva">
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Cargo na Proposta</label>
+                    <select id="jobTitleInput" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);">
+                        <option value="">Selecione um cargo</option>
+                        <option value="Diretor Comercial">Diretor Comercial</option>
+                        <option value="Supervisor Comercial">Supervisor Comercial</option>
+                        <option value="Executivo de Vendas">Executivo de Vendas</option>
+                        <option value="Consultor Comercial">Consultor Comercial</option>
+                    </select>
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
                     <label>Equipe (Opcional)</label>
                     <input type="text" id="teamObsInput" placeholder="Ex: Equipe Norte">
                 </div>
                 <div class="form-group" style="margin-top: 1rem; margin-bottom: 1rem;">
-                    <label>Cargo</label>
+                    <label>Papel no Sistema</label>
                     <div style="display: flex; gap: 15px; margin-top: 5px;">
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="roleObs" value="Vendedor" checked> Vendedor</label>
                         <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="roleObs" value="Responsável"> Responsável</label>
@@ -228,6 +238,7 @@
             const email = document.getElementById('emailInput').value;
             const password = document.getElementById('passwordInput').value;
             const name = nameInput.value;
+            const jobTitle = document.getElementById('jobTitleInput') ? document.getElementById('jobTitleInput').value : '';
             const teamObs = document.getElementById('teamObsInput').value;
             const roleObs = document.querySelector('input[name="roleObs"]:checked')?.value || 'Vendedor';
 
@@ -236,12 +247,19 @@
                     login(email, password);
                     window.location.href = 'dashboard.html';
                 } else {
+                    if (!name.includes(' ') || name.trim().split(' ').length < 2) {
+                        throw new Error("Por favor, informe seu Nome e Sobrenome.");
+                    }
+                    if (!jobTitle) {
+                        throw new Error("Por favor, selecione seu Cargo na Proposta.");
+                    }
+                    
                     const confirmPass = confirmPasswordInput.value;
                     if (password !== confirmPass) {
                         throw new Error("As senhas não coincidem. Tente novamente.");
                     }
                     
-                    register(name, email, password, teamObs, roleObs);
+                    register(name, email, password, teamObs, roleObs, jobTitle);
                     
                     // Mostra a tela de sucesso
                     authForm.style.display = 'none';

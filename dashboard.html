@@ -255,91 +255,158 @@
             <a href="index.html" class="menu-item" style="color: var(--primary-green); font-weight: 600;">
                 <span>+</span><span class="menu-item-text">Nova Proposta</span>
             </a>
-            <a href="profile.html" class="menu-item">
-                <span>⚙️</span><span class="menu-item-text">Meu Perfil</span>
-            </a>
-            <a href="admin.html" class="menu-item" id="adminMenuLink" style="display: none; color: #ef4444;">
-                <span>🔒</span><span class="menu-item-text">Painel Admin <span id="dashPendingBadge" style="background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; margin-left: 5px; display: none;"></span></span>
-            </a>
-            <div class="menu-item" style="color: #ef4444; margin-top: 1rem; border-top: 1px solid var(--border-color);" onclick="logout()">
-                <span>🚪</span><span class="menu-item-text">Sair</span>
-            </div>
         </div>
 
         <!-- MAIN CONTENT -->
         <div class="main-content">
-            <div class="top-header">
+            <div class="top-header" style="padding-right: 200px;">
                 <div>
                     <h2 style="margin:0; font-size: 1.2rem;" id="viewTitle">Funil de Propostas</h2>
                     <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-muted);" id="userNameDisplay"></p>
                 </div>
-                
-                <!-- Filtros Globais (Aparecem em ambas as views para admin/gerente) -->
-                <div id="filterSection" style="display: none; gap: 15px; align-items: center;">
-                    <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Vendedor:</div>
-                    <select id="userFilter" class="btn btn-secondary" style="background: var(--input-bg); border-color: var(--border-color); color: var(--text-main); font-size: 0.9rem; padding: 6px 12px; cursor: pointer;">
-                        <option value="">Todos os Vendedores</option>
-                    </select>
+            </div>
+
+            <!-- Filtros Globais (Minimalista) -->
+            <div id="filterSection" style="display: none; padding: 15px 30px 0 30px; flex-direction: column; gap: 12px;">
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">PERÍODO:</span>
+                        <select id="dateFilter" class="btn" style="width: auto; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+                            <option value="all">Todo o Período</option>
+                            <option value="month">Este Mês</option>
+                            <option value="last30">Últimos 30 Dias</option>
+                            <option value="year">Este Ano</option>
+                            <option value="custom">Personalizado...</option>
+                        </select>
+                        <div id="customDateWrap" style="display: none; gap: 8px; align-items: center;">
+                            <input type="date" id="dateStart" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.85rem; padding: 5px 10px; border-radius: 6px;">
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">até</span>
+                            <input type="date" id="dateEnd" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.85rem; padding: 5px 10px; border-radius: 6px;">
+                        </div>
+                    </div>
+                    
+                    <div style="width: 1px; height: 24px; background: var(--border-color);"></div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">VENDEDOR:</span>
+                        <button id="btnUserDropdown" class="btn" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            Todos os Vendedores ▼
+                        </button>
+                        <div id="userDropdownMenu" style="display: none; position: absolute; top: 115%; left: 0; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; width: max-content; min-width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; flex-direction: column;">
+                            <input type="text" id="userSearchInput" placeholder="Buscar vendedor..." style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); font-size: 0.8rem; padding: 6px; border-radius: 4px; width: calc(100% - 12px); margin-bottom: 8px;">
+                            <div id="userDropdownList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+
+                    <div style="width: 1px; height: 24px; background: var(--border-color);"></div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">EQUIPES:</span>
+                        <button id="btnTeamDropdown" class="btn" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            Todas as Equipes ▼
+                        </button>
+                        <div id="teamDropdownMenu" style="display: none; position: absolute; top: 115%; left: 0; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; width: max-content; min-width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; flex-direction: column;">
+                            <input type="text" id="teamSearchInput" placeholder="Buscar equipe..." style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); font-size: 0.8rem; padding: 6px; border-radius: 4px; width: calc(100% - 12px); margin-bottom: 8px;">
+                            <div id="teamDropdownList" style="display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+
+                    <div style="width: 1px; height: 24px; background: var(--border-color);" id="compactDivider"></div>
+
+                    <button id="btnToggleCompact" class="btn" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;" title="Alternar visão compacta">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+                        <span id="labelToggleCompact">Visão Compacta</span>
+                    </button>
                 </div>
             </div>
-            
-            <!-- TEAM CARDS (Filtro Global Interativo) -->
-            <div id="globalTeamCards" class="team-cards-container" style="display: none; padding: 1.5rem 2rem 0 2rem; margin-bottom: 0;"></div>
+
+            <style>
+                .kanban-board.compact-mode .proposal-card {
+                    padding: 0.75rem;
+                }
+                .kanban-board.compact-mode .card-details,
+                .kanban-board.compact-mode .card-price,
+                .kanban-board.compact-mode .card-lost-reason,
+                .kanban-board.compact-mode .card-actions {
+                    display: none !important;
+                }
+                .kanban-board.compact-mode .card-compact-value {
+                    display: block !important;
+                }
+                .card-compact-value {
+                    display: none;
+                    margin-top: 8px;
+                    font-size: 0.9rem;
+                    font-weight: 700;
+                    color: #3b82f6;
+                    font-family: monospace;
+                }
+            </style>
 
             <!-- VIEW: KANBAN -->
-            <div id="view-kanban" class="view-section active">
-                <div style="display: flex; gap: 15px; margin-bottom: 2rem; flex-shrink: 0;">
-                    <div style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
-                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Total Implantação (Kanban)</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);" id="kbImplTotal">R$ 0,00</div>
-                    </div>
-                    <div style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
-                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Total Mensalidade (Kanban)</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);" id="kbMensTotal">R$ 0,00</div>
-                    </div>
-                </div>
+            <div id="view-kanban" class="view-section active" style="padding-top: 15px;">
 
                 <div class="kanban-board" id="kanbanBoard">
                     <div class="kanban-col" data-status="rascunho">
-                        <div class="kanban-col-header" style="border-top: 4px solid #94a3b8; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                        <div class="kanban-col-header" style="border-top: none; flex-direction: column; align-items: stretch; gap: 5px; background: rgba(148, 163, 184, 0.05); padding-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>Rascunhos</span> <span class="badge" id="count-rascunho" style="margin:0;">0</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;"></div>
+                                    <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">Rascunhos</span>
+                                </div>
+                                <span class="badge" id="count-rascunho" style="margin:0; background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2);">0</span>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
-                                Impl: <span id="val-impl-rascunho">R$ 0,00</span> | Mens: <span id="val-mens-rascunho">R$ 0,00</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 5px;">
+                                <div>Impl: <span id="val-impl-rascunho" style="font-weight: 600;">R$ 0,00</span></div>
+                                <div>Mens: <span id="val-mens-rascunho" style="font-weight: 600;">R$ 0,00</span></div>
                             </div>
                         </div>
                         <div class="kanban-col-content" id="col-rascunho" data-status="rascunho"></div>
                     </div>
                     <div class="kanban-col" data-status="enviada">
-                        <div class="kanban-col-header" style="border-top: 4px solid #3b82f6; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                        <div class="kanban-col-header" style="border-top: none; flex-direction: column; align-items: stretch; gap: 5px; background: rgba(59, 130, 246, 0.05); padding-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>Enviadas</span> <span class="badge" id="count-enviada" style="margin:0;">0</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6;"></div>
+                                    <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">Enviadas</span>
+                                </div>
+                                <span class="badge" id="count-enviada" style="margin:0; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2);">0</span>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
-                                Impl: <span id="val-impl-enviada">R$ 0,00</span> | Mens: <span id="val-mens-enviada">R$ 0,00</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 5px;">
+                                <div>Impl: <span id="val-impl-enviada" style="font-weight: 600;">R$ 0,00</span></div>
+                                <div>Mens: <span id="val-mens-enviada" style="font-weight: 600;">R$ 0,00</span></div>
                             </div>
                         </div>
                         <div class="kanban-col-content" id="col-enviada" data-status="enviada"></div>
                     </div>
                     <div class="kanban-col" data-status="aprovada">
-                        <div class="kanban-col-header" style="border-top: 4px solid #10b981; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                        <div class="kanban-col-header" style="border-top: none; flex-direction: column; align-items: stretch; gap: 5px; background: rgba(16, 185, 129, 0.05); padding-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>Aprovadas</span> <span class="badge" id="count-aprovada" style="margin:0;">0</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
+                                    <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">Aprovadas</span>
+                                </div>
+                                <span class="badge" id="count-aprovada" style="margin:0; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);">0</span>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
-                                Impl: <span id="val-impl-aprovada">R$ 0,00</span> | Mens: <span id="val-mens-aprovada">R$ 0,00</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 5px;">
+                                <div>Impl: <span id="val-impl-aprovada" style="font-weight: 600;">R$ 0,00</span></div>
+                                <div>Mens: <span id="val-mens-aprovada" style="font-weight: 600;">R$ 0,00</span></div>
                             </div>
                         </div>
                         <div class="kanban-col-content" id="col-aprovada" data-status="aprovada"></div>
                     </div>
                     <div class="kanban-col" data-status="perdida">
-                        <div class="kanban-col-header" style="border-top: 4px solid #ef4444; border-top-left-radius: 12px; border-top-right-radius: 12px; flex-direction: column; align-items: stretch; gap: 5px;">
+                        <div class="kanban-col-header" style="border-top: none; flex-direction: column; align-items: stretch; gap: 5px; background: rgba(239, 68, 68, 0.05); padding-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>Perdidas</span> <span class="badge" id="count-perdida" style="margin:0;">0</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></div>
+                                    <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">Perdidas</span>
+                                </div>
+                                <span class="badge" id="count-perdida" style="margin:0; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);">0</span>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; line-height: 1.4;">
-                                Impl: <span id="val-impl-perdida">R$ 0,00</span> | Mens: <span id="val-mens-perdida">R$ 0,00</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: normal; margin-top: 5px;">
+                                <div>Impl: <span id="val-impl-perdida" style="font-weight: 600;">R$ 0,00</span></div>
+                                <div>Mens: <span id="val-mens-perdida" style="font-weight: 600;">R$ 0,00</span></div>
                             </div>
                         </div>
                         <div class="kanban-col-content" id="col-perdida" data-status="perdida"></div>
@@ -348,52 +415,195 @@
             </div>
 
             <!-- VIEW: ANALYTICS (BI) -->
-            <div id="view-analytics" class="view-section">
-                <!-- KPIs -->
-                <div class="metrics-grid">
-                    <div class="metric-card" style="border-bottom: 4px solid #10b981;">
-                        <div class="metric-title">Fechamento do Mês (Aprovadas)</div>
-                        <div class="metric-value" id="biMensalidadeMes" style="color: #10b981;">R$ 0,00</div>
-                        <div class="metric-sub" id="biImplantacaoMes">Implantação: R$ 0,00</div>
+            <div id="view-analytics" class="view-section" style="padding-top: 15px;">
+                
+                <!-- BI TABS NAVIGATION -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; overflow-x: auto;">
+                    <button class="bi-tab-btn active" onclick="switchBiTab('geral')" style="padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Visão Geral</button>
+                    <button class="bi-tab-btn" onclick="switchBiTab('vendas')" style="padding: 8px 16px; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 500;">Vendas (Aprovadas)</button>
+                    <button class="bi-tab-btn" onclick="switchBiTab('pipeline')" style="padding: 8px 16px; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 500;">Pipeline (Em Aberto)</button>
+                    <button class="bi-tab-btn" onclick="switchBiTab('perdas')" style="padding: 8px 16px; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 500;">Análise de Perdas</button>
+                </div>
+
+                <!-- TAB: VISÃO GERAL -->
+                <div id="bi-tab-geral" class="bi-tab-content">
+                    <h2 style="margin-top: 0; color: var(--text-main); font-size: 1.2rem; margin-bottom: 15px;">Indicadores Principais</h2>
+                    <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px;">
+                        <div class="metric-card" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
+                            <div class="metric-title" style="color: #10b981; font-weight: 600;">Receita Fechada Mensal</div>
+                            <div class="metric-value" id="biGeralMensal" style="color: var(--text-main); font-family: monospace;">R$ 0,00</div>
+                            <div class="metric-sub" id="biGeralImpl" style="color: var(--text-muted);">Impl: R$ 0,00</div>
+                        </div>
+                        <div class="metric-card" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
+                            <div class="metric-title" style="color: #3b82f6; font-weight: 600;">Pipeline Mensal</div>
+                            <div class="metric-value" id="biGeralPipeMensal" style="color: var(--text-main); font-family: monospace;">R$ 0,00</div>
+                            <div class="metric-sub" id="biGeralPipeImpl" style="color: var(--text-muted);">Impl: R$ 0,00</div>
+                        </div>
+                        <div class="metric-card" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2);">
+                            <div class="metric-title" style="color: #8b5cf6; font-weight: 600;">Forecast Total</div>
+                            <div class="metric-value" id="biForecast" style="color: var(--text-main); font-family: monospace;">R$ 0,00</div>
+                            <div class="metric-sub" style="color: var(--text-muted);">Pipeline x Win Rate</div>
+                        </div>
+                        <div class="metric-card" style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2);">
+                            <div class="metric-title" style="color: #f59e0b; font-weight: 600;">Win Rate</div>
+                            <div class="metric-value" id="biWinRate" style="color: var(--text-main); font-family: monospace;">0%</div>
+                            <div class="metric-sub" style="color: var(--text-muted);">Aprovadas vs Perdidas</div>
+                        </div>
+                        <div class="metric-card" style="background: rgba(236, 72, 153, 0.05); border: 1px solid rgba(236, 72, 153, 0.2);">
+                            <div class="metric-title" style="color: #ec4899; font-weight: 600;">Ciclo de Venda Médio</div>
+                            <div class="metric-value" id="biCicloVenda" style="color: var(--text-main); font-family: monospace;">0 dias</div>
+                            <div class="metric-sub" style="color: var(--text-muted);">Criação até Aprovação</div>
+                        </div>
                     </div>
-                    <div class="metric-card" style="border-bottom: 4px solid #3b82f6;">
-                        <div class="metric-title">Pipeline Ativo (Mensalidade Enviada)</div>
-                        <div class="metric-value" id="biPipelineMensal" style="color: #3b82f6;">R$ 0,00</div>
-                        <div class="metric-sub">Negócios na mesa no momento</div>
-                    </div>
-                    <div class="metric-card" style="border-bottom: 4px solid var(--border-color);">
-                        <div class="metric-title">Total Geral Histórico (Receita)</div>
-                        <div class="metric-value" id="biTotalGeral">R$ 0,00</div>
-                        <div class="metric-sub">Soma acumulada (Mens + Impl) de aprovadas</div>
+
+                    <div class="charts-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Evolução de Vendas (Aprovadas)</h3>
+                            <div style="height: 300px;"><canvas id="chartSalesTrend"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Receita por Segmento</h3>
+                            <div style="height: 300px; position: relative;"><canvas id="chartSegmentos"></canvas></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Gráficos -->
-                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
-                    <div class="chart-card">
-                        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem;">Desempenho por Equipe</h3>
-                        <canvas id="chartTeams"></canvas>
+                <!-- TAB: VENDAS APROVADAS -->
+                <div id="bi-tab-vendas" class="bi-tab-content" style="display: none;">
+                    <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px;">
+                        <div class="metric-card">
+                            <div class="metric-title">Propostas Aprovadas</div>
+                            <div class="metric-value" id="biQtdAprovadas">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Ticket Médio (Mensal)</div>
+                            <div class="metric-value" id="biTicketMensal">R$ 0,00</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Ticket Médio (Impl)</div>
+                            <div class="metric-value" id="biTicketImpl">R$ 0,00</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Maior Venda (Total)</div>
+                            <div class="metric-value" id="biMaiorVenda">R$ 0,00</div>
+                        </div>
                     </div>
-                    <div class="chart-card">
-                        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem;">Desempenho por Vendedor</h3>
-                        <canvas id="chartSellers"></canvas>
+                    
+                    <div class="chart-card" style="margin-bottom: 1.5rem;">
+                        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Quem vendeu mais? (Ranking)</h3>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                                        <th style="padding: 10px;">USUÁRIOS</th>
+                                        <th style="padding: 10px; color: #10b981;">GANHOS</th>
+                                        <th style="padding: 10px; color: #ef4444;">PERDIDOS</th>
+                                        <th style="padding: 10px; color: #3b82f6;">PIPELINE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableRankingVendedores">
+                                    <!-- Preenchido via JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="chart-card">
-                        <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem;">Motivos de Perda (Receita Perdida)</h3>
-                        <canvas id="chartLostReasons"></canvas>
+
+                    <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem;">
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Receita Aprovada por Equipe</h3>
+                            <div style="height: 350px; overflow-x: auto;">
+                                <div style="min-width: 500px; height: 100%;"><canvas id="chartAprovadasEquipe"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Receita Aprovada por Vendedor</h3>
+                            <div style="height: 350px; overflow-x: auto;">
+                                <div style="min-width: 800px; height: 100%;"><canvas id="chartAprovadasVendedor"></canvas></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- TAB: PIPELINE -->
+                <div id="bi-tab-pipeline" class="bi-tab-content" style="display: none;">
+                    <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px;">
+                        <div class="metric-card">
+                            <div class="metric-title">Propostas em Aberto</div>
+                            <div class="metric-value" id="biQtdAbertas">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Ticket Médio Estimado (Mensal)</div>
+                            <div class="metric-value" id="biTicketPipeMensal">R$ 0,00</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Ticket Médio Estimado (Impl)</div>
+                            <div class="metric-value" id="biTicketPipeImpl">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Pipeline em Aberto por Equipe</h3>
+                            <div style="height: 350px; overflow-x: auto;">
+                                <div style="min-width: 500px; height: 100%;"><canvas id="chartPipelineEquipe"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Pipeline em Aberto por Vendedor</h3>
+                            <div style="height: 350px; overflow-x: auto;">
+                                <div style="min-width: 800px; height: 100%;"><canvas id="chartPipelineVendedor"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: PERDAS -->
+                <div id="bi-tab-perdas" class="bi-tab-content" style="display: none;">
+                    <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px;">
+                        <div class="metric-card" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2);">
+                            <div class="metric-title" style="color: #ef4444; font-weight: 600;">Receita Total Perdida</div>
+                            <div class="metric-value" id="biPerdaTotal">R$ 0,00</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Propostas Perdidas</div>
+                            <div class="metric-value" id="biQtdPerdidas">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Motivo Mais Comum</div>
+                            <div class="metric-value" id="biPiorMotivo" style="font-size: 1rem; line-height: 1.2; display: flex; align-items: center; word-break: break-word;">-</div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px;">
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Receita Perdida por Vendedor</h3>
+                            <div style="height: 350px; overflow-x: auto;">
+                                <div style="min-width: 600px; height: 100%;"><canvas id="chartPerdasVendedor"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 style="margin-top:0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-main);">Distribuição de Motivos (Por Valor)</h3>
+                            <div style="height: 350px; position: relative;"><canvas id="chartLostReasons"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script src="db-local.js"></script>
     <script>
+        // Configuração Global Chart.js para Dark Mode
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+        Chart.defaults.font.family = "'Inter', sans-serif";
         const session = requireAuth();
         let chartInstanceTeams = null;
         let chartInstanceSellers = null;
         let chartInstanceLost = null;
         let globalSelectedTeams = [];
+        let globalSelectedUsers = [];
         let visibleTeams = [];
         let visibleUsers = [];
 
@@ -419,16 +629,6 @@
         if (session.role === 'admin' || session.role === 'dono_equipe') {
             document.getElementById('menu-analytics').style.display = 'flex';
             document.getElementById('filterSection').style.display = 'flex';
-            
-            if (session.role === 'admin') {
-                document.getElementById('adminMenuLink').style.display = 'flex';
-                const pendingCount = getUsers().filter(u => u.status === 'pendente').length;
-                if (pendingCount > 0) {
-                    const badge = document.getElementById('dashPendingBadge');
-                    badge.innerText = pendingCount;
-                    badge.style.display = 'inline-block';
-                }
-            }
 
             // Populate filters
             const teams = getTeams();
@@ -441,60 +641,209 @@
                 visibleUsers = users.filter(u => u.teamIds && u.teamIds.some(tid => session.teamIds.includes(tid)));
             }
             
-            // Configura Filtro de Usuário
-            const userSelect = document.getElementById('userFilter');
-            visibleUsers.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u.id;
-                opt.textContent = u.name;
-                userSelect.appendChild(opt);
+            // Configura Filtro de Usuário (Dropdown Multi-select com Checkboxes)
+            const btnUserDropdown = document.getElementById('btnUserDropdown');
+            const userDropdownMenu = document.getElementById('userDropdownMenu');
+            const userDropdownList = document.getElementById('userDropdownList');
+            const userSearchInput = document.getElementById('userSearchInput');
+
+            const updateUserBtnText = () => {
+                if (globalSelectedUsers.length === 0) {
+                    btnUserDropdown.innerText = 'Todos os Vendedores ▼';
+                } else {
+                    btnUserDropdown.innerText = `Vendedores (${globalSelectedUsers.length}) ▼`;
+                }
+            };
+
+            btnUserDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+                teamDropdownMenu.style.display = 'none'; // Fecha o outro
+                userDropdownMenu.style.display = userDropdownMenu.style.display === 'none' ? 'flex' : 'none';
             });
-            userSelect.addEventListener('change', () => { updateData(); });
 
-            // Configura Filtro de Equipes (Cards)
-            const teamCardsContainer = document.getElementById('globalTeamCards');
-            teamCardsContainer.style.display = 'flex';
-            
-            const allProps = getProposals();
-            
-            visibleTeams.forEach(t => {
-                // Calcula os totais dessa equipe
-                const teamUsers = visibleUsers.filter(u => u.teamIds && u.teamIds.includes(t.id)).map(u => u.id);
-                const teamProps = allProps.filter(p => teamUsers.includes(p.sellerId));
-                
-                let tImpl = 0;
-                let tMens = 0;
-                teamProps.forEach(p => {
-                    if (p.status !== 'perdida') {
-                        tImpl += parseCurrency(p.data.implCost);
-                        tMens += parseCurrency(p.data.monthlyFee);
-                    }
-                });
-
-                const card = document.createElement('div');
-                card.className = 'team-filter-card';
-                if (globalSelectedTeams.includes(t.id)) card.classList.add('selected');
-                card.innerHTML = `
-                    <div class="team-filter-title">${t.name}</div>
-                    <div class="team-filter-val" id="tcard-mens-${t.id}" style="color: #3b82f6;">Mens: ${formatCurrency(tMens)}</div>
-                    <div class="team-filter-val" id="tcard-impl-${t.id}" style="color: #10b981;">Impl: ${formatCurrency(tImpl)}</div>
-                `;
-                
-                card.addEventListener('click', () => {
-                    const idx = globalSelectedTeams.indexOf(t.id);
-                    if (idx > -1) {
-                        globalSelectedTeams.splice(idx, 1);
-                        card.classList.remove('selected');
-                    } else {
-                        globalSelectedTeams.push(t.id);
-                        card.classList.add('selected');
-                    }
-                    updateData();
-                });
-
-                teamCardsContainer.appendChild(card);
+            document.addEventListener('click', (e) => {
+                if(!btnUserDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                    userDropdownMenu.style.display = 'none';
+                }
+                if(!btnTeamDropdown.contains(e.target) && !teamDropdownMenu.contains(e.target)) {
+                    teamDropdownMenu.style.display = 'none';
+                }
             });
+
+            const renderUserList = (filterText = '') => {
+                userDropdownList.innerHTML = '';
+                const filtered = visibleUsers
+                    .filter(u => u.name.toLowerCase().includes(filterText.toLowerCase()))
+                    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+                filtered.forEach(u => {
+                    const label = document.createElement('label');
+                    label.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 6px 8px; cursor: pointer; color: var(--text-main); font-size: 0.85rem; border-radius: 4px;';
+                    label.onmouseover = () => label.style.background = 'rgba(255,255,255,0.05)';
+                    label.onmouseout = () => label.style.background = 'transparent';
+                    
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.value = u.id;
+                    cb.style.cssText = 'cursor: pointer; margin: 0; width: 16px; height: 16px;';
+                    cb.checked = globalSelectedUsers.includes(u.id);
+                    
+                    cb.addEventListener('change', () => {
+                        if (cb.checked) {
+                            if (!globalSelectedUsers.includes(u.id)) globalSelectedUsers.push(u.id);
+                        } else {
+                            const idx = globalSelectedUsers.indexOf(u.id);
+                            if (idx > -1) globalSelectedUsers.splice(idx, 1);
+                        }
+                        updateUserBtnText();
+                        updateData();
+                    });
+                    
+                    const span = document.createElement('span');
+                    span.innerText = u.name;
+                    span.style.textTransform = 'capitalize';
+                    
+                    const userTeams = getTeams().filter(t => u.teamIds && u.teamIds.includes(t.id)).map(t => t.name).join(', ');
+                    if (userTeams) {
+                        const teamSpan = document.createElement('span');
+                        teamSpan.innerText = `(${userTeams})`;
+                        teamSpan.style.cssText = 'font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; font-style: italic; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; display: inline-block; vertical-align: middle; text-transform: capitalize;';
+                        span.appendChild(document.createTextNode(' '));
+                        span.appendChild(teamSpan);
+                    }
+                    
+                    label.appendChild(cb);
+                    label.appendChild(span);
+                    userDropdownList.appendChild(label);
+                });
+            };
+
+            userSearchInput.addEventListener('input', (e) => {
+                renderUserList(e.target.value);
+            });
+
+            renderUserList();
+            updateUserBtnText();
+
+            // Configura Filtro de Equipes (Dropdown Multi-select com Checkboxes)
+            const btnTeamDropdown = document.getElementById('btnTeamDropdown');
+            const teamDropdownMenu = document.getElementById('teamDropdownMenu');
+            const teamDropdownList = document.getElementById('teamDropdownList');
+            const teamSearchInput = document.getElementById('teamSearchInput');
+            
+            const updateTeamBtnText = () => {
+                if (globalSelectedTeams.length === 0) {
+                    btnTeamDropdown.innerText = 'Todas as Equipes ▼';
+                } else {
+                    btnTeamDropdown.innerText = `Equipes (${globalSelectedTeams.length}) ▼`;
+                }
+            };
+            
+            btnTeamDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdownMenu.style.display = 'none'; // Fecha o outro
+                teamDropdownMenu.style.display = teamDropdownMenu.style.display === 'none' ? 'flex' : 'none';
+            });
+
+            const renderTeamList = (filterText = '') => {
+                teamDropdownList.innerHTML = '';
+                const filtered = visibleTeams
+                    .filter(t => t.name.toLowerCase().includes(filterText.toLowerCase()))
+                    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+                filtered.forEach(t => {
+                    const label = document.createElement('label');
+                    label.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 6px 8px; cursor: pointer; color: var(--text-main); font-size: 0.85rem; border-radius: 4px;';
+                    label.onmouseover = () => label.style.background = 'rgba(255,255,255,0.05)';
+                    label.onmouseout = () => label.style.background = 'transparent';
+                    
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.value = t.id;
+                    cb.style.cssText = 'cursor: pointer; margin: 0; width: 16px; height: 16px;';
+                    cb.checked = globalSelectedTeams.includes(t.id);
+                    
+                    cb.addEventListener('change', () => {
+                        if (cb.checked) {
+                            if (!globalSelectedTeams.includes(t.id)) globalSelectedTeams.push(t.id);
+                        } else {
+                            const idx = globalSelectedTeams.indexOf(t.id);
+                            if (idx > -1) globalSelectedTeams.splice(idx, 1);
+                        }
+                        updateTeamBtnText();
+                        updateData();
+                    });
+                    
+                    const span = document.createElement('span');
+                    span.innerText = t.name;
+                    span.style.textTransform = 'capitalize';
+                    
+                    label.appendChild(cb);
+                    label.appendChild(span);
+                    teamDropdownList.appendChild(label);
+                });
+            };
+
+            teamSearchInput.addEventListener('input', (e) => {
+                renderTeamList(e.target.value);
+            });
+
+            renderTeamList();
+            updateTeamBtnText();
+
+            // Configura Filtro de Data
+            const dateSelect = document.getElementById('dateFilter');
+            const customDateWrap = document.getElementById('customDateWrap');
+            const dateStart = document.getElementById('dateStart');
+            const dateEnd = document.getElementById('dateEnd');
+            
+            dateSelect.addEventListener('change', () => { 
+                if (dateSelect.value === 'custom') {
+                    customDateWrap.style.display = 'flex';
+                } else {
+                    customDateWrap.style.display = 'none';
+                    updateData(); 
+                }
+            });
+            
+            dateStart.addEventListener('change', () => { updateData(); });
+            dateEnd.addEventListener('change', () => { updateData(); });
         }
+
+        // BI Tabs logic
+        window.switchBiTab = (tabId) => {
+            document.querySelectorAll('.bi-tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.bi-tab-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text-muted)';
+                btn.style.border = '1px solid var(--border-color)';
+                btn.classList.remove('active');
+            });
+            
+            const targetTab = document.getElementById('bi-tab-' + tabId);
+            if(targetTab) targetTab.style.display = 'block';
+            
+            const btn = document.querySelector(`.bi-tab-btn[onclick="switchBiTab('${tabId}')"]`);
+            if(btn) {
+                btn.style.background = 'var(--primary-color)';
+                btn.style.color = 'white';
+                btn.style.border = 'none';
+                btn.classList.add('active');
+            }
+            
+            // Resize active charts
+            if (tabId === 'geral') {
+                if(window.chartInstanceSalesTrend) window.chartInstanceSalesTrend.resize();
+                if(window.chartInstanceSegmentos) window.chartInstanceSegmentos.resize();
+            } else if (tabId === 'vendas') {
+                if(window.chartInstanceAprovadasEquipe) window.chartInstanceAprovadasEquipe.resize();
+                if(window.chartInstanceAprovadasVendedor) window.chartInstanceAprovadasVendedor.resize();
+            } else if (tabId === 'pipeline') {
+                if(window.chartInstancePipelineEquipe) window.chartInstancePipelineEquipe.resize();
+                if(window.chartInstancePipelineVendedor) window.chartInstancePipelineVendedor.resize();
+            } else if (tabId === 'perdas') {
+                if(window.chartInstancePerdasVendedor) window.chartInstancePerdasVendedor.resize();
+                if(window.chartInstanceLost) window.chartInstanceLost.resize();
+            }
+        };
 
         // View Switcher & Hash / Sidebar logic
         const switchView = (viewId, element) => {
@@ -514,13 +863,20 @@
             
             document.getElementById('viewTitle').innerText = (viewId === 'kanban') ? 'Funil de Propostas' : 'Dashboard Analítico (BI)';
 
+            // Hide/Show Compact Button
+            const btnToggleCompact = document.getElementById('btnToggleCompact');
+            const compactDivider = document.getElementById('compactDivider');
+            if (btnToggleCompact) btnToggleCompact.style.display = (viewId === 'kanban') ? 'flex' : 'none';
+            if (compactDivider) compactDivider.style.display = (viewId === 'kanban') ? 'block' : 'none';
+
             if (viewId === 'analytics') {
                 renderAnalytics(getProposals());
             }
             // Trigger chart resize if entering analytics
-            if(viewId === 'analytics' && chartInstanceTeams) {
-                chartInstanceTeams.resize();
-                chartInstanceSellers.resize();
+            if(viewId === 'analytics') {
+                if(window.chartInstanceAprovadasEquipe) window.chartInstanceAprovadasEquipe.resize();
+                if(window.chartInstanceAprovadasVendedor) window.chartInstanceAprovadasVendedor.resize();
+                if(window.chartInstancePipelineVendedor) window.chartInstancePipelineVendedor.resize();
             }
         };
 
@@ -529,16 +885,52 @@
         const getFilteredProposals = () => {
             let proposals = getProposals();
             
-            // Filtro Global de Equipes (Múltipla Seleção)
-            if (globalSelectedTeams.length > 0 && document.getElementById('globalTeamCards').style.display !== 'none') {
-                const usersInSelectedTeams = getUsers().filter(u => u.teamIds && u.teamIds.some(tid => globalSelectedTeams.includes(tid))).map(u => u.id);
-                proposals = proposals.filter(p => usersInSelectedTeams.includes(p.sellerId));
-            }
-            
-            // Filtro de Vendedor
-            const userSelect = document.getElementById('userFilter');
-            if (userSelect && userSelect.value && document.getElementById('filterSection').style.display !== 'none') {
-                proposals = proposals.filter(p => p.sellerId === userSelect.value);
+            if (document.getElementById('filterSection').style.display !== 'none') {
+                // Filtro de Período
+                const dateFilter = document.getElementById('dateFilter');
+                if (dateFilter && dateFilter.value !== 'all') {
+                    const now = new Date();
+                    proposals = proposals.filter(p => {
+                        // Propostas em aberto não sofrem filtro de data (pipeline é sempre atual)
+                        if (p.status === 'enviada') return true;
+
+                        const d = new Date(p.updatedAt || p.createdAt);
+                        if (dateFilter.value === 'month') {
+                            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                        } else if (dateFilter.value === 'last30') {
+                            const diff = now - d;
+                            return diff <= 30 * 24 * 60 * 60 * 1000;
+                        } else if (dateFilter.value === 'year') {
+                            return d.getFullYear() === now.getFullYear();
+                        } else if (dateFilter.value === 'custom') {
+                            const startStr = document.getElementById('dateStart').value;
+                            const endStr = document.getElementById('dateEnd').value;
+                            if (startStr && endStr) {
+                                const start = new Date(startStr + 'T00:00:00');
+                                const end = new Date(endStr + 'T23:59:59');
+                                return d >= start && d <= end;
+                            } else if (startStr) {
+                                const start = new Date(startStr + 'T00:00:00');
+                                return d >= start;
+                            } else if (endStr) {
+                                const end = new Date(endStr + 'T23:59:59');
+                                return d <= end;
+                            }
+                        }
+                        return true;
+                    });
+                }
+                
+                // Filtro de Equipes (Chips Multi-select)
+                if (globalSelectedTeams.length > 0) {
+                    const usersInSelectedTeams = getUsers().filter(u => u.teamIds && u.teamIds.some(tid => globalSelectedTeams.includes(tid))).map(u => u.id);
+                    proposals = proposals.filter(p => usersInSelectedTeams.includes(p.sellerId));
+                }
+                
+                // Filtro de Vendedor (Multi-select)
+                if (globalSelectedUsers.length > 0) {
+                    proposals = proposals.filter(p => globalSelectedUsers.includes(p.sellerId));
+                }
             }
             
             return proposals;
@@ -655,10 +1047,17 @@
                     div.draggable = true;
                     div.dataset.id = p.id;
                     
+                    // Permite clicar no cartão inteiro para abrir, ignorando cliques nos botões internos
+                    div.addEventListener('click', (e) => {
+                        if (!e.target.closest('button')) {
+                            window.location.href = `index.html?load=${p.id}`;
+                        }
+                    });
+                    
                     let lostReasonHtml = '';
                     if (status === 'perdida' && p.data && p.data.lostReason) {
                         lostReasonHtml = `
-                            <div style="margin-top: 10px; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; border-left: 3px solid #ef4444; font-size: 0.75rem; word-break: break-word;">
+                            <div class="card-lost-reason" style="margin-top: 10px; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; border-left: 3px solid #ef4444; font-size: 0.75rem; word-break: break-word;">
                                 <strong style="color: #ef4444;">Motivo da Perda:</strong><br>
                                 <span style="color: var(--text-main); line-height: 1.4; display: block; margin-top: 2px;">${p.data.lostReason}</span>
                             </div>
@@ -666,26 +1065,38 @@
                     }
 
                     div.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
-                            <div class="badge">${p.data.segmentLabel || 'Geral'}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; line-height: 1.3;">
-                                👤 <strong>${p.sellerName}</strong><br>
-                                🏢 ${teamName}
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div class="badge" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; font-weight: 500;">${p.data.segmentLabel || 'Geral'}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-align: right; line-height: 1.4; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 6px;">
+                                <span style="color: var(--text-main);">${p.sellerName}</span><br>
+                                <span style="font-size: 0.65rem; opacity: 0.8;">${teamName}</span>
                             </div>
                         </div>
-                        <div class="prop-client" style="margin-top: 5px;">${p.data.clientName}</div>
-                        <div class="prop-details">
-                            <div><strong>Contato:</strong> ${p.data.contactName}</div>
-                            <div><strong>Data:</strong> ${date}</div>
+                        <div class="prop-client" style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; font-size: 1.05rem; margin-bottom: 8px;">
+                            <span style="font-size: 1.2rem; opacity: 0.8;">🏢</span> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.data.clientName}</span>
                         </div>
-                        <div class="prop-price" style="font-size: 0.85rem; line-height: 1.4; display: flex; flex-direction: column; align-items: flex-end;">
-                            <span style="color: #3b82f6;">Mensalidade: <strong>${formatCurrency(mensVal)}</strong></span>
-                            <span style="color: #10b981;">Implantação: <strong>${formatCurrency(implVal)}</strong></span>
+                        <div class="card-details prop-details" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;"><span>👤</span> ${p.data.contactName}</div>
+                            <div style="display: flex; align-items: center; gap: 6px;"><span>📅</span> Criado em ${date}</div>
                         </div>
+                        <div class="card-price prop-price" style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: var(--text-muted);">Mensalidade</span>
+                                <span style="color: #3b82f6; font-weight: 700; font-family: monospace; font-size: 0.95rem;">${formatCurrency(mensVal)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: var(--text-muted);">Implantação</span>
+                                <span style="color: #10b981; font-weight: 700; font-family: monospace; font-size: 0.95rem;">${formatCurrency(implVal)}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-compact-value">
+                            ${formatCurrency(mensVal + implVal)}
+                        </div>
+
                         ${lostReasonHtml}
-                        <div style="margin-top: 15px; display: flex; gap: 10px;">
-                            <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 0.9rem;" onclick="window.location.href='index.html?load=${p.id}'">Abrir</button>
-                            <button class="btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px 12px; border-radius: 6px; cursor: pointer;" onclick="deleteProp('${p.id}')">❌</button>
+                        <div class="card-actions" style="margin-top: 15px; display: flex; justify-content: flex-end;">
+                            <button class="btn" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" onclick="deleteProp('${p.id}')" title="Excluir Proposta">🗑️ Excluir</button>
                         </div>
                     `;
                     
@@ -710,9 +1121,9 @@
                 document.getElementById(`val-impl-${k}`).innerText = formatCurrency(totals[k].impl);
                 document.getElementById(`val-mens-${k}`).innerText = formatCurrency(totals[k].mens);
             });
-            document.getElementById('kbImplTotal').innerText = formatCurrency(kbImpl);
-            document.getElementById('kbMensTotal').innerText = formatCurrency(kbMens);
         };
+        
+        let chartInstanceMainLine = null;
         
         const renderAnalytics = (proposals) => {
             const allUsers = getUsers();
@@ -721,28 +1132,39 @@
             const currentYear = new Date().getFullYear();
 
             // 1. Calculate Metric Cards
-            let aprovadaMensMes = 0;
-            let aprovadaImplMes = 0;
-            let pipelineMens = 0;
-            let histTotal = 0;
+            let aprovadaMens = 0, aprovadaImpl = 0, pipelineMens = 0, pipelineImpl = 0, perdaTotal = 0;
+            let countWin = 0, countLoss = 0, countAbertas = 0;
+            let maiorVenda = 0;
+            let totalCicloDias = 0;
             
             const lostReasonsData = {};
+            const sellerLossData = {};
 
             proposals.forEach(p => {
                 const implVal = parseCurrency(p.data.implCost);
                 const mensVal = parseCurrency(p.data.monthlyFee);
                 const total = implVal + mensVal;
-                const pDate = new Date(p.date);
                 
                 if (p.status === 'aprovada') {
-                    histTotal += total;
-                    if (pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear) {
-                        aprovadaMensMes += mensVal;
-                        aprovadaImplMes += implVal;
-                    }
+                    countWin++;
+                    aprovadaMens += mensVal;
+                    aprovadaImpl += implVal;
+                    if (total > maiorVenda) maiorVenda = total;
+                    
+                    // Ciclo de Venda
+                    const dtCreated = new Date(p.createdAt);
+                    const dtUpdated = new Date(p.updatedAt || p.createdAt);
+                    const diffTime = Math.abs(dtUpdated - dtCreated);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    totalCicloDias += diffDays;
+                    
                 } else if (p.status === 'enviada') {
+                    countAbertas++;
                     pipelineMens += mensVal;
+                    pipelineImpl += implVal;
                 } else if (p.status === 'perdida') {
+                    countLoss++;
+                    perdaTotal += total;
                     let reason = p.data.lostReason || 'Não informado';
                     const knownReasons = getLostReasons();
                     if (!knownReasons.includes(reason) && reason !== 'Não informado') {
@@ -750,30 +1172,105 @@
                     }
                     if (!lostReasonsData[reason]) lostReasonsData[reason] = 0;
                     lostReasonsData[reason] += total;
+                    
+                    if(!sellerLossData[p.sellerName]) sellerLossData[p.sellerName] = 0;
+                    sellerLossData[p.sellerName] += total;
                 }
             });
 
-            document.getElementById('biMensalidadeMes').innerText = formatCurrency(aprovadaMensMes) + ' /mês';
-            document.getElementById('biImplantacaoMes').innerText = `Implantação: ${formatCurrency(aprovadaImplMes)}`;
-            document.getElementById('biPipelineMensal').innerText = formatCurrency(pipelineMens) + ' /mês';
-            document.getElementById('biTotalGeral').innerText = formatCurrency(histTotal);
+            let winRate = 0;
+            if (countWin + countLoss > 0) winRate = (countWin / (countWin + countLoss)) * 100;
+            
+            let cicloMedio = countWin > 0 ? (totalCicloDias / countWin).toFixed(0) : 0;
+            const forecast = (pipelineMens + pipelineImpl) * (winRate / 100);
 
-            // 2. Data for Charts
+            // Populating Geral
+            document.getElementById('biGeralMensal').innerText = formatCurrency(aprovadaMens) + ' /mês';
+            document.getElementById('biGeralImpl').innerText = `Impl: ${formatCurrency(aprovadaImpl)}`;
+            document.getElementById('biGeralPipeMensal').innerText = formatCurrency(pipelineMens) + ' /mês';
+            document.getElementById('biGeralPipeImpl').innerText = `Impl: ${formatCurrency(pipelineImpl)}`;
+            document.getElementById('biForecast').innerText = formatCurrency(forecast);
+            document.getElementById('biWinRate').innerText = winRate.toFixed(1) + '%';
+            document.getElementById('biCicloVenda').innerText = cicloMedio + ' dias';
+
+            // Populating Vendas
+            document.getElementById('biQtdAprovadas').innerText = countWin;
+            document.getElementById('biTicketMensal').innerText = formatCurrency(countWin > 0 ? aprovadaMens / countWin : 0);
+            document.getElementById('biTicketImpl').innerText = formatCurrency(countWin > 0 ? aprovadaImpl / countWin : 0);
+            document.getElementById('biMaiorVenda').innerText = formatCurrency(maiorVenda);
+
+            // Populating Pipeline
+            document.getElementById('biQtdAbertas').innerText = countAbertas;
+            document.getElementById('biTicketPipeMensal').innerText = formatCurrency(countAbertas > 0 ? pipelineMens / countAbertas : 0);
+            document.getElementById('biTicketPipeImpl').innerText = formatCurrency(countAbertas > 0 ? pipelineImpl / countAbertas : 0);
+
+            // Populating Perdas
+            let piorMotivo = '-';
+            let maxPerdaMotivo = 0;
+            Object.keys(lostReasonsData).forEach(m => {
+                if(lostReasonsData[m] > maxPerdaMotivo) {
+                    maxPerdaMotivo = lostReasonsData[m];
+                    piorMotivo = m;
+                }
+            });
+            document.getElementById('biPerdaTotal').innerText = formatCurrency(perdaTotal);
+            document.getElementById('biQtdPerdidas').innerText = countLoss;
+            document.getElementById('biPiorMotivo').innerText = piorMotivo;
+
+            // 2. Data for Charts & Tables
             const teamData = {};
             const sellerData = {};
+            const segmentData = {};
+            const trendData = {};
+
+            // Generate comprehensive table data
+            const sellerTableStats = {};
 
             proposals.forEach(p => {
-                if (p.status !== 'aprovada' && p.status !== 'enviada') return;
-
                 const impl = parseCurrency(p.data.implCost);
                 const mens = parseCurrency(p.data.monthlyFee);
                 const total = impl + mens;
+                const sName = p.sellerName || 'Desconhecido';
+
+                if(!sellerTableStats[sName]) sellerTableStats[sName] = { ganhas: 0, ganhasVal: 0, perdidas: 0, perdidasVal: 0, abertas: 0, abertasVal: 0 };
+                
+                if (p.status === 'aprovada') {
+                    sellerTableStats[sName].ganhas++;
+                    sellerTableStats[sName].ganhasVal += total;
+
+                    // Segment
+                    let seg = p.data.segmentLabel || 'Geral';
+                    if(!segmentData[seg]) segmentData[seg] = 0;
+                    segmentData[seg] += total;
+
+                    // Trend
+                    const dt = new Date(p.updatedAt || p.createdAt);
+                    const monthYear = dt.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+                    if(!trendData[monthYear]) trendData[monthYear] = { val: 0, time: dt.getTime() };
+                    trendData[monthYear].val += total;
+                } else if (p.status === 'enviada') {
+                    sellerTableStats[sName].abertas++;
+                    sellerTableStats[sName].abertasVal += total;
+                } else if (p.status === 'perdida') {
+                    sellerTableStats[sName].perdidas++;
+                    sellerTableStats[sName].perdidasVal += total;
+                }
+
+                if (p.status !== 'aprovada' && p.status !== 'enviada') return;
+
                 const isFechado = p.status === 'aprovada';
 
                 // Seller Aggregation
-                if(!sellerData[p.sellerName]) sellerData[p.sellerName] = { fechado: 0, aberto: 0 };
-                if (isFechado) sellerData[p.sellerName].fechado += total;
-                else sellerData[p.sellerName].aberto += total;
+                if(!sellerData[sName]) {
+                    sellerData[sName] = { fechadoMens: 0, fechadoImpl: 0, abertoMens: 0, abertoImpl: 0 };
+                }
+                if (isFechado) {
+                    sellerData[sName].fechadoMens += mens;
+                    sellerData[sName].fechadoImpl += impl;
+                } else {
+                    sellerData[sName].abertoMens += mens;
+                    sellerData[sName].abertoImpl += impl;
+                }
 
                 // Team Aggregation
                 const sUser = allUsers.find(u => u.id === p.sellerId);
@@ -787,96 +1284,225 @@
                 if(assignedTeams.length === 0) assignedTeams.push('Sem Equipe');
 
                 assignedTeams.forEach(tName => {
-                    if(!teamData[tName]) teamData[tName] = { fechado: 0, aberto: 0 };
-                    if (isFechado) teamData[tName].fechado += total;
-                    else teamData[tName].aberto += total;
+                    if(!teamData[tName]) {
+                        teamData[tName] = { fechadoMens: 0, fechadoImpl: 0, abertoMens: 0, abertoImpl: 0 };
+                    }
+                    if (isFechado) {
+                        teamData[tName].fechadoMens += mens;
+                        teamData[tName].fechadoImpl += impl;
+                    } else {
+                        teamData[tName].abertoMens += mens;
+                        teamData[tName].abertoImpl += impl;
+                    }
                 });
             });
 
+            // Populate Leaderboard Table
+            const tbodyRanking = document.getElementById('tableRankingVendedores');
+            tbodyRanking.innerHTML = '';
+            
+            // Sort by ganhasVal desc
+            const sortedSellers = Object.keys(sellerTableStats).sort((a,b) => sellerTableStats[b].ganhasVal - sellerTableStats[a].ganhasVal);
+            
+            sortedSellers.forEach(sName => {
+                const s = sellerTableStats[sName];
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                tr.innerHTML = `
+                    <td style="padding: 12px 10px; font-weight: 500; color: var(--text-main);">${sName}</td>
+                    <td style="padding: 12px 10px;">
+                        <span style="color: #10b981; font-weight: bold; display: block;">${formatCurrency(s.ganhasVal)}</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">${s.ganhas} negócio(s)</span>
+                    </td>
+                    <td style="padding: 12px 10px;">
+                        <span style="color: #ef4444; font-weight: bold; display: block;">${formatCurrency(s.perdidasVal)}</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">${s.perdidas} negócio(s)</span>
+                    </td>
+                    <td style="padding: 12px 10px;">
+                        <span style="color: #3b82f6; font-weight: bold; display: block;">${formatCurrency(s.abertasVal)}</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">${s.abertas} negócio(s)</span>
+                    </td>
+                `;
+                tbodyRanking.appendChild(tr);
+            });
+
+            // Trend Labels
+            const trendKeys = Object.keys(trendData).sort((a,b) => trendData[a].time - trendData[b].time);
+            const trendLabels = trendKeys;
+            const trendValues = trendKeys.map(k => trendData[k].val);
+
+            // Segment Labels
+            const segLabels = Object.keys(segmentData).sort((a,b) => segmentData[b] - segmentData[a]); // desc
+            const segValues = segLabels.map(k => segmentData[k]);
+
             const teamLabels = Object.keys(teamData);
-            const teamFechado = teamLabels.map(k => teamData[k].fechado);
-            const teamAberto = teamLabels.map(k => teamData[k].aberto);
+            const teamFechadoMens = teamLabels.map(k => teamData[k].fechadoMens);
+            const teamFechadoImpl = teamLabels.map(k => teamData[k].fechadoImpl);
             
             const sellerLabels = Object.keys(sellerData);
-            const sellerFechado = sellerLabels.map(k => sellerData[k].fechado);
-            const sellerAberto = sellerLabels.map(k => sellerData[k].aberto);
+            const sellerFechadoMens = sellerLabels.map(k => sellerData[k].fechadoMens);
+            const sellerFechadoImpl = sellerLabels.map(k => sellerData[k].fechadoImpl);
+            const sellerAbertoMens = sellerLabels.map(k => sellerData[k].abertoMens);
+            const sellerAbertoImpl = sellerLabels.map(k => sellerData[k].abertoImpl);
 
-            // Chart Configuration
-            const chartConfig = { color: '#9ca3af', gridColor: '#3b4952' };
+            const teamAbertoMens = teamLabels.map(k => teamData[k].abertoMens);
+            const teamAbertoImpl = teamLabels.map(k => teamData[k].abertoImpl);
+            
+            const sellerLossLabels = Object.keys(sellerLossData);
+            const sellerLossValues = Object.values(sellerLossData);
 
-            if(chartInstanceTeams) chartInstanceTeams.destroy();
-            const ctxT = document.getElementById('chartTeams').getContext('2d');
-            chartInstanceTeams = new Chart(ctxT, {
-                type: 'bar',
+            // Configuração global comum
+            const chartConfig = { color: '#9ca3af', gridColor: 'rgba(255,255,255,0.05)' };
+
+            // 0.1 Evolução de Vendas (Line)
+            const ctxSalesTrend = document.getElementById('chartSalesTrend').getContext('2d');
+            if(window.chartInstanceSalesTrend) window.chartInstanceSalesTrend.destroy();
+            window.chartInstanceSalesTrend = new Chart(ctxSalesTrend, {
+                type: 'line',
                 data: {
-                    labels: teamLabels.length ? teamLabels : ['Nenhum Dado'],
-                    datasets: [
-                        {
-                            label: 'Fechado (Aprovadas)',
-                            data: teamLabels.length ? teamFechado : [0],
-                            backgroundColor: '#10b981',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'Em Aberto (Enviadas)',
-                            data: teamLabels.length ? teamAberto : [0],
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 4
-                        }
-                    ]
+                    labels: trendLabels.length ? trendLabels : ['Sem Dados'],
+                    datasets: [{
+                        label: 'Receita Aprovada',
+                        data: trendLabels.length ? trendValues : [0],
+                        borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true, tension: 0.4, borderWidth: 2, pointBackgroundColor: '#10b981'
+                    }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
-                        y: { stacked: true, ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } },
-                        x: { stacked: true, ticks: { color: chartConfig.color }, grid: { display: false } }
+                        x: { ticks: { color: chartConfig.color }, grid: { display: false } },
+                        y: { ticks: { color: chartConfig.color, callback: (val) => 'R$ ' + (val/1000) + 'k' }, grid: { color: chartConfig.gridColor } }
                     },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: chartConfig.color } }
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ' ' + formatCurrency(Number(ctx.raw)) } } }
+                }
+            });
+
+            // 0.2 Receita por Segmento (Doughnut)
+            const ctxSegmentos = document.getElementById('chartSegmentos').getContext('2d');
+            if(window.chartInstanceSegmentos) window.chartInstanceSegmentos.destroy();
+            window.chartInstanceSegmentos = new Chart(ctxSegmentos, {
+                type: 'doughnut',
+                data: {
+                    labels: segLabels.length ? segLabels : ['Nenhuma Venda'],
+                    datasets: [{
+                        data: segLabels.length ? segValues : [1],
+                        backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#64748b', '#0ea5e9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, cutout: '65%', maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'right', labels: { color: chartConfig.color, boxWidth: 10 } },
+                        tooltip: { callbacks: { label: (ctx) => ' ' + formatCurrency(segLabels.length ? Number(ctx.raw) : 0) } }
                     }
                 }
             });
 
-            if(chartInstanceSellers) chartInstanceSellers.destroy();
-            const ctxS = document.getElementById('chartSellers').getContext('2d');
-            chartInstanceSellers = new Chart(ctxS, {
+            // 1. Receita Aprovada por Equipe (Barras Agrupadas)
+            const ctxAprovadasEquipe = document.getElementById('chartAprovadasEquipe').getContext('2d');
+            if(window.chartInstanceAprovadasEquipe) window.chartInstanceAprovadasEquipe.destroy();
+            window.chartInstanceAprovadasEquipe = new Chart(ctxAprovadasEquipe, {
                 type: 'bar',
                 data: {
-                    labels: sellerLabels.length ? sellerLabels : ['Nenhum Dado'],
+                    labels: teamLabels.length ? teamLabels : ['Sem Dados'],
                     datasets: [
-                        {
-                            label: 'Fechado (Aprovadas)',
-                            data: sellerLabels.length ? sellerFechado : [0],
-                            backgroundColor: '#10b981',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'Em Aberto (Enviadas)',
-                            data: sellerLabels.length ? sellerAberto : [0],
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 4
-                        }
+                        { label: 'Mensalidade', data: teamLabels.length ? teamFechadoMens : [0], backgroundColor: '#10b981', borderRadius: 4 }, // Verde
+                        { label: 'Implantação', data: teamLabels.length ? teamFechadoImpl : [0], backgroundColor: '#8b5cf6', borderRadius: 4 }  // Roxo
                     ]
                 },
                 options: {
-                    responsive: true,
-                    scales: {
-                        y: { stacked: true, ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } },
-                        x: { stacked: true, ticks: { color: chartConfig.color }, grid: { display: false } }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: chartConfig.color } }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } }, x: { ticks: { color: chartConfig.color }, grid: { display: false } } },
+                    plugins: { legend: { position: 'top', labels: { color: chartConfig.color } } }
                 }
             });
 
-            // Gráfico de Motivos de Perda
+            // 2. Receita Aprovada por Vendedor (Barras Agrupadas)
+            const ctxAprovadasVendedor = document.getElementById('chartAprovadasVendedor').getContext('2d');
+            if(window.chartInstanceAprovadasVendedor) window.chartInstanceAprovadasVendedor.destroy();
+            window.chartInstanceAprovadasVendedor = new Chart(ctxAprovadasVendedor, {
+                type: 'bar',
+                data: {
+                    labels: sellerLabels.length ? sellerLabels : ['Sem Dados'],
+                    datasets: [
+                        { label: 'Mensalidade', data: sellerLabels.length ? sellerFechadoMens : [0], backgroundColor: '#10b981', borderRadius: 4 }, // Verde
+                        { label: 'Implantação', data: sellerLabels.length ? sellerFechadoImpl : [0], backgroundColor: '#8b5cf6', borderRadius: 4 }  // Roxo
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } }, x: { ticks: { color: chartConfig.color }, grid: { display: false } } },
+                    plugins: { legend: { position: 'top', labels: { color: chartConfig.color } } }
+                }
+            });
+
+            // 3. Pipeline em Aberto por Equipe (Barras Agrupadas)
+            const ctxPipelineEquipe = document.getElementById('chartPipelineEquipe').getContext('2d');
+            if(window.chartInstancePipelineEquipe) window.chartInstancePipelineEquipe.destroy();
+            window.chartInstancePipelineEquipe = new Chart(ctxPipelineEquipe, {
+                type: 'bar',
+                data: {
+                    labels: teamLabels.length ? teamLabels : ['Sem Dados'],
+                    datasets: [
+                        { label: 'Mensalidade', data: teamLabels.length ? teamAbertoMens : [0], backgroundColor: '#3b82f6', borderRadius: 4 }, // Azul
+                        { label: 'Implantação', data: teamLabels.length ? teamAbertoImpl : [0], backgroundColor: '#10b981', borderRadius: 4 }  // Verde
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } }, x: { ticks: { color: chartConfig.color }, grid: { display: false } } },
+                    plugins: { legend: { position: 'top', labels: { color: chartConfig.color } } }
+                }
+            });
+
+            // 4. Pipeline em Aberto por Vendedor (Barras Agrupadas)
+            const ctxPipelineVendedor = document.getElementById('chartPipelineVendedor').getContext('2d');
+            if(window.chartInstancePipelineVendedor) window.chartInstancePipelineVendedor.destroy();
+            window.chartInstancePipelineVendedor = new Chart(ctxPipelineVendedor, {
+                type: 'bar',
+                data: {
+                    labels: sellerLabels.length ? sellerLabels : ['Sem Dados'],
+                    datasets: [
+                        { label: 'Mensalidade', data: sellerLabels.length ? sellerAbertoMens : [0], backgroundColor: '#3b82f6', borderRadius: 4 }, // Azul
+                        { label: 'Implantação', data: sellerLabels.length ? sellerAbertoImpl : [0], backgroundColor: '#10b981', borderRadius: 4 }  // Verde
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } }, x: { ticks: { color: chartConfig.color }, grid: { display: false } } },
+                    plugins: { legend: { position: 'top', labels: { color: chartConfig.color } } }
+                }
+            });
+
+            // 5. Perdas por Vendedor (Barra Vertical Simples)
+            const ctxPerdasVendedor = document.getElementById('chartPerdasVendedor').getContext('2d');
+            if(window.chartInstancePerdasVendedor) window.chartInstancePerdasVendedor.destroy();
+            window.chartInstancePerdasVendedor = new Chart(ctxPerdasVendedor, {
+                type: 'bar',
+                data: {
+                    labels: sellerLossLabels.length ? sellerLossLabels : ['Sem Dados'],
+                    datasets: [{
+                        label: 'Receita Perdida',
+                        data: sellerLossLabels.length ? sellerLossValues : [0],
+                        backgroundColor: '#ef4444', borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { ticks: { color: chartConfig.color }, grid: { color: chartConfig.gridColor } }, x: { ticks: { color: chartConfig.color }, grid: { display: false } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 6. Gráfico de Motivos de Perda (Doughnut)
             const lostLabels = Object.keys(lostReasonsData);
             const lostValues = Object.values(lostReasonsData);
 
-            if(chartInstanceLost) chartInstanceLost.destroy();
+            if(window.chartInstanceLost) window.chartInstanceLost.destroy();
             const ctxL = document.getElementById('chartLostReasons').getContext('2d');
-            chartInstanceLost = new Chart(ctxL, {
+            window.chartInstanceLost = new Chart(ctxL, {
                 type: 'doughnut',
                 data: {
                     labels: lostLabels.length ? lostLabels : ['Nenhuma Perda'],
@@ -887,9 +1513,9 @@
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: true, cutout: '70%', maintainAspectRatio: false,
                     plugins: { 
-                        legend: { position: 'bottom', labels: { color: chartConfig.color } },
+                        legend: { position: 'right', labels: { color: chartConfig.color, boxWidth: 10 } },
                         tooltip: { callbacks: { label: (ctx) => ' ' + formatCurrency(lostLabels.length ? Number(ctx.raw) : 0) } }
                     }
                 }
@@ -1047,6 +1673,37 @@
             }
         });
 
+        // Kanban Compact View Toggle
+        const kanbanBoard = document.getElementById('kanbanBoard');
+        const btnToggleCompact = document.getElementById('btnToggleCompact');
+        const labelToggleCompact = document.getElementById('labelToggleCompact');
+        
+        const updateCompactUI = () => {
+            if (kanbanBoard.classList.contains('compact-mode')) {
+                labelToggleCompact.innerText = 'Visão Completa';
+                btnToggleCompact.style.background = 'rgba(0, 168, 134, 0.1)';
+                btnToggleCompact.style.color = 'var(--primary-green)';
+                btnToggleCompact.style.borderColor = 'var(--primary-green)';
+            } else {
+                labelToggleCompact.innerText = 'Visão Compacta';
+                btnToggleCompact.style.background = 'transparent';
+                btnToggleCompact.style.color = 'var(--text-muted)';
+                btnToggleCompact.style.borderColor = 'var(--border-color)';
+            }
+        };
+
+        if (localStorage.getItem('kanbanCompactView') === 'true') {
+            kanbanBoard.classList.add('compact-mode');
+            updateCompactUI();
+        }
+
+        btnToggleCompact.addEventListener('click', () => {
+            kanbanBoard.classList.toggle('compact-mode');
+            const isCompact = kanbanBoard.classList.contains('compact-mode');
+            localStorage.setItem('kanbanCompactView', isCompact ? 'true' : 'false');
+            updateCompactUI();
+        });
+
         // Start
         updateData();
         
@@ -1069,6 +1726,62 @@
                 switchView('kanban');
             }
         }
+    </script>
+
+    <!-- SCRIPT DE GERACAO DE DADOS MOCK PARA BI (V2) -->
+    <script>
+    (function() {
+        if (!localStorage.getItem('mockData_v3')) {
+            const users = getUsers();
+            const segments = ['Indústria', 'Varejo', 'Tecnologia', 'Saúde', 'Agronegócio', 'Educação'];
+            let props = getProposals();
+            let addedCount = 0;
+            
+            users.forEach(u => {
+                for(let i=1; i<=4; i++) {
+                    // 50% Aprovada / 50% Enviada
+                    const status = (i <= 2) ? 'aprovada' : 'enviada';
+                    const dt = new Date();
+                    
+                    // Espalhar as datas entre hoje e 4 meses atrás para criar linha do tempo rica no gráfico
+                    const randomDays = Math.floor(Math.random() * 120);
+                    dt.setDate(dt.getDate() - randomDays); 
+                    
+                    const mensVal = Math.floor(Math.random() * 4500) + 500;
+                    const implVal = Math.floor(Math.random() * 12000) + 1000;
+
+                    props.push({
+                        id: 'mock_' + u.id + '_' + Date.now() + '_' + i,
+                        sellerId: u.id,
+                        sellerName: u.name,
+                        status: status,
+                        date: dt.toISOString(),
+                        createdAt: dt.getTime(),
+                        updatedAt: dt.getTime() + (Math.random() * 86400000 * 5),
+                        data: {
+                            clientName: 'MockCorp ' + u.name.split(' ')[0] + ' ' + i,
+                            contactName: 'Contato Teste',
+                            segmentLabel: segments[Math.floor(Math.random() * segments.length)],
+                            monthlyFee: mensVal.toFixed(2).replace('.', ','),
+                            implCost: implVal.toFixed(2).replace('.', ',')
+                        }
+                    });
+                    addedCount++;
+                }
+            });
+            
+            if (addedCount > 0) {
+                let db = JSON.parse(localStorage.getItem('atual_sistemas_db'));
+                if (db) {
+                    db.proposals = props;
+                    localStorage.setItem('atual_sistemas_db', JSON.stringify(db));
+                    localStorage.setItem('mockData_v3', 'true');
+                    console.log('Foram geradas ' + addedCount + ' propostas de teste no banco real.');
+                    window.location.reload();
+                }
+            }
+        }
+    })();
     </script>
 </body>
 </html>

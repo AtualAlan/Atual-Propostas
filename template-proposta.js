@@ -459,7 +459,11 @@ const getProposalTemplate = (data) => {
             </div>
 
             <div class="footer">
-                <p>Atual Soluções de Gestão LTDA</p>
+                <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <p style="color: #ffffff; font-size: 16px; margin-bottom: 5px; font-weight: 600; margin-top: 0;">${data.consultantName || 'Consultor Atual'}</p>
+                    <p style="color: #00A886; margin-top: 0; font-size: 13px; margin-bottom: 0;">${data.consultantJobTitle || 'Consultor Comercial'}</p>
+                </div>
+                <p style="margin-top: 0;">Atual Soluções de Gestão LTDA</p>
                 <p>Dúvidas? Entre em contato conosco através do nosso <a href="https://www.atualsistemas.com.br">Site Oficial</a>.</p>
                 <p style="margin-top: 20px; font-size: 12px;">Esta proposta tem validade de 15 dias após a sua emissão.</p>
             </div>

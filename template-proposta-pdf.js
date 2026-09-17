@@ -92,11 +92,11 @@ const getProposalTemplatePDF = (data) => {
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
             body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #ffffff; color: #334155; line-height: 1.6; }
-            .container { max-width: 800px; margin: 0 auto; background-color: #ffffff; }
+            .container { max-width: 800px; margin: 0 auto; background-color: #ffffff; min-height: 297mm; display: flex; flex-direction: column; }
             .header { background: linear-gradient(135deg, #00A886 0%, #007860 100%); padding: 30px 10px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0; }
             .logo { max-width: 200px; margin-bottom: 15px; }
             .header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
-            .content { padding: 30px 15px; }
+            .content { padding: 30px 15px; flex: 1; }
             .greeting { font-size: 16px; margin-bottom: 25px; }
             .section-title { color: #252F35; font-size: 20px; font-weight: 700; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; page-break-after: avoid; }
             .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; page-break-inside: avoid; }
@@ -106,7 +106,7 @@ const getProposalTemplatePDF = (data) => {
             .price-item.secondary { background: #00A886; color: white; }
             .price-label { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 10px; display: block; }
             .price-value { font-size: 32px; font-weight: 700; margin: 0; }
-            .footer { background: #252F35; color: #9ba7ae; text-align: center; padding: 30px 20px; font-size: 14px; }
+            .footer { background: #252F35; color: #9ba7ae; text-align: center; padding: 30px 20px; font-size: 14px; margin-top: auto; }
             .footer a { color: #00A886; text-decoration: none; font-weight: 600; }
         </style>
     </head>
@@ -190,7 +190,11 @@ const getProposalTemplatePDF = (data) => {
             </div>
 
             <div class="footer">
-                <p>Atual Soluções de Gestão LTDA</p>
+                <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <p style="color: #ffffff; font-size: 16px; margin-bottom: 5px; font-weight: 600; margin-top: 0;">${data.consultantName}</p>
+                    <p style="color: #00A886; margin-top: 0; font-size: 13px; margin-bottom: 0;">${data.consultantJobTitle}</p>
+                </div>
+                <p style="margin-top: 0;">Atual Soluções de Gestão LTDA</p>
                 <p>Dúvidas? Entre em contato conosco através do nosso <a href="https://www.atualsistemas.com.br">Site Oficial</a>.</p>
                 <p style="margin-top: 20px; font-size: 12px;">Esta proposta tem validade de 15 dias após a sua emissão.</p>
             </div>

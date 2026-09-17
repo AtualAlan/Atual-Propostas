@@ -219,7 +219,7 @@ const requireAdmin = () => {
     return session;
 };
 
-const register = (name, email, password, requestedTeam, requestedRole) => {
+const register = (name, email, password, requestedTeam, requestedRole, jobTitle) => {
     const db = initDB();
     if (db.users.find(u => u.email === email)) {
         throw new Error("Este e-mail já está em uso.");
@@ -231,6 +231,7 @@ const register = (name, email, password, requestedTeam, requestedRole) => {
         email,
         password,
         role: 'vendedor',
+        jobTitle: jobTitle || 'Consultor Comercial',
         teamIds: [],
         status: 'pendente', // Exige aprovação
         requestedTeam: requestedTeam || '',
@@ -260,7 +261,7 @@ const approveUser = (id, role, teamIds) => {
     }
 };
 
-const updateUserByAdmin = (id, newName, newEmail) => {
+const updateUserByAdmin = (id, newName, newEmail, newJobTitle) => {
     const db = initDB();
     const user = db.users.find(u => u.id === id);
     if (user) {
@@ -270,6 +271,7 @@ const updateUserByAdmin = (id, newName, newEmail) => {
         }
         user.name = newName;
         user.email = newEmail;
+        user.jobTitle = newJobTitle;
         saveDB(db);
         
         // Atualiza a sessão caso o admin esteja editando a si mesmo
@@ -277,12 +279,13 @@ const updateUserByAdmin = (id, newName, newEmail) => {
         if (session && session.id === id) {
             session.name = newName;
             session.email = newEmail;
+            session.jobTitle = newJobTitle;
             localStorage.setItem(SESSION_KEY, JSON.stringify(session));
         }
     }
 };
 
-const updateProfile = (id, newName, newEmail, oldPassword, newPassword) => {
+const updateProfile = (id, newName, newEmail, oldPassword, newPassword, newJobTitle) => {
     const db = initDB();
     const user = db.users.find(u => u.id === id);
     if (user) {
@@ -299,12 +302,14 @@ const updateProfile = (id, newName, newEmail, oldPassword, newPassword) => {
         
         user.name = newName;
         user.email = newEmail;
+        user.jobTitle = newJobTitle;
         saveDB(db);
         
         const session = JSON.parse(localStorage.getItem(SESSION_KEY));
         if (session && session.id === id) {
             session.name = newName;
             session.email = newEmail;
+            session.jobTitle = newJobTitle;
             localStorage.setItem(SESSION_KEY, JSON.stringify(session));
         }
     }
@@ -454,18 +459,25 @@ const saveProposal = (proposalData, existingId = null, existingStatus = null) =>
         const idx = db.proposals.findIndex(p => p.id === existingId);
         if (idx > -1) {
             db.proposals[idx].data = proposalData;
-            db.proposals[idx].date = new Date().toISOString(); // Update date on modify
+            db.proposals[idx].updatedAt = new Date().toISOString();
+            // Preserve original date
+            if (!db.proposals[idx].createdAt) {
+                db.proposals[idx].createdAt = db.proposals[idx].date || new Date().toISOString();
+            }
             saveDB(db);
             return db.proposals[idx];
         }
     }
     
+    const now = new Date().toISOString();
     const newProposal = {
         id: 'prop_' + Date.now(),
         sellerId: session.id,
         sellerName: session.name,
         teamIds: session.teamIds || [],
-        date: new Date().toISOString(),
+        date: now,
+        createdAt: now,
+        updatedAt: now,
         status: existingStatus || 'rascunho',
         order: Date.now(),
         data: proposalData
@@ -482,6 +494,16 @@ const getProposals = () => {
     
     const db = initDB();
     
+    let modified = false;
+    db.proposals.forEach(p => {
+        if (!p.createdAt) {
+            p.createdAt = p.date || new Date().toISOString();
+            p.updatedAt = p.date || new Date().toISOString();
+            modified = true;
+        }
+    });
+    if (modified) saveDB(db);
+
     // RBAC: Role Based Access Control
     if (session.role === 'admin') {
         return db.proposals; // Vê todas
@@ -724,26 +746,58 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 // ==========================================
-// INJEÇÃO GLOBAL DE UI (Perfil do Usuário)
+// INJEÇÃO GLOBAL DE UI (Perfil do Usuário no Topo Direito)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const session = getSession();
-    if (session && document.getElementById('globalSidebar')) {
+    if (session) {
         const firstName = session.name.split(' ')[0];
         const initial = firstName.charAt(0).toUpperCase();
+        const isAdmin = (session.role === 'admin');
         
-        const brandDiv = document.querySelector('.sidebar-brand');
-        if (brandDiv) {
-            const profileHtml = `
-                <div class="user-profile-widget" onclick="window.location.href='profile.html'" style="display: flex; align-items: center; gap: 10px; margin: 15px 10px 10px 10px; padding: 8px; background: rgba(0, 168, 134, 0.1); border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,168,134,0.2); overflow: hidden; transition: 0.2s;" title="Acessar Meu Perfil">
-                    <div style="min-width: 32px; height: 32px; border-radius: 50%; background: #00A886; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${initial}</div>
-                    <div class="menu-item-text" style="flex: 1; overflow: hidden; white-space: nowrap;">
-                        <div style="font-size: 11px; color: var(--text-muted); line-height: 1;">Bem-vindo(a),</div>
-                        <div style="font-size: 14px; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; margin-top: 2px;">${firstName}</div>
+        // Remove old occurrences if any
+        const existing = document.getElementById('topUserWidget');
+        if (existing) existing.remove();
+
+        const profileHtml = `
+            <div id="topUserWidget" style="position: absolute; top: 1.2rem; right: 2rem; z-index: 1000;">
+                <div onclick="toggleUserMenu()" style="display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--panel-bg); border-radius: 20px; cursor: pointer; border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: 0.2s;" title="Opções do Usuário">
+                    <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${firstName}</div>
+                    <div style="min-width: 28px; height: 28px; border-radius: 50%; background: #00A886; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;">${initial}</div>
+                    <span style="font-size: 10px; color: var(--text-muted);">▼</span>
+                </div>
+                
+                <div id="userDropdownMenu" style="display: none; position: absolute; top: 110%; right: 0; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); min-width: 180px; overflow: hidden; flex-direction: column;">
+                    <a href="profile.html" style="padding: 12px 15px; color: var(--text-main); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color);">
+                        <span>⚙️</span> Meu Perfil
+                    </a>
+                    ${isAdmin ? `
+                    <a href="admin.html" style="padding: 12px 15px; color: #ef4444; text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color);">
+                        <span>🔒</span> Painel Admin
+                    </a>` : ''}
+                    <div onclick="logout()" style="padding: 12px 15px; color: #ef4444; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                        <span>🚪</span> Sair
                     </div>
                 </div>
-            `;
-            brandDiv.insertAdjacentHTML('afterend', profileHtml);
+            </div>
+        `;
+        
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.style.position = 'relative';
+            mainContent.insertAdjacentHTML('afterbegin', profileHtml);
         }
+
+        window.toggleUserMenu = function() {
+            const menu = document.getElementById('userDropdownMenu');
+            menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+        };
+        
+        document.addEventListener('click', (e) => {
+            const widget = document.getElementById('topUserWidget');
+            if (widget && !widget.contains(e.target)) {
+                document.getElementById('userDropdownMenu').style.display = 'none';
+            }
+        });
     }
 });

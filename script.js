@@ -345,6 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             });
 
+        const session = JSON.parse(localStorage.getItem('atual_sistemas_session') || '{}');
+        
         return {
             clientName: document.getElementById('clientName').value,
             clientCNPJ: document.getElementById('clientCNPJ').value,
@@ -357,7 +359,9 @@ document.addEventListener('DOMContentLoaded', () => {
             segmentLabel: segmentInfo ? segmentInfo.name : '',
             segmentFeatures: segmentInfo ? segmentInfo.features : {},
             tools: selectedToolsData,
-            segmentKey: segKey
+            segmentKey: segKey,
+            consultantName: session.name || 'Consultor Atual',
+            consultantJobTitle: session.jobTitle || 'Consultor Comercial'
         };
     };
 
