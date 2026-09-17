@@ -71,21 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
         toolsGrid.innerHTML = dbTools.map(t => {
             const safeId = getSafeId(t.id);
             return `
-            <div class="tool-config-card" id="card-tool-${safeId}" style="display: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: rgba(0,0,0,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                <div style="padding: 12px 14px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${safeId}" style="display: none;">
-                            <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">${t.name}</span>
-                        </div>
-                        <div style="display: flex; gap: 4px;">
-                            <button type="button" id="gear-${safeId}" title="Configurar Preço" onclick="window.toggleToolOpts('${safeId}')" style="background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; color: var(--text-muted); transition: all 0.2s;">⚙️</button>
-                            <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
+            <div id="wrapper-tool-${safeId}" style="display: none; margin-bottom: 12px;">
+                <div class="tool-config-card" id="card-tool-${safeId}" style="border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                    <div style="padding: 12px 14px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" name="tools" value="${t.id}" id="chk-tool-${safeId}" style="display: none;">
+                                <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">${t.name}</span>
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                                <button type="button" id="gear-${safeId}" title="Configurar Preço" onclick="window.toggleToolOpts('${safeId}')" style="background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; color: var(--text-muted); transition: all 0.2s;">⚙️</button>
+                                <button type="button" title="Remover da Proposta" onclick="window.removeTool('${t.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 6px 10px; font-size: 16px; transition: 0.2s; color: #ef4444;">🗑️</button>
+                            </div>
                         </div>
                     </div>
-                    <div id="legend-${safeId}" style="display: none; font-size: 11px; color: var(--primary-green); font-weight: 600; text-align: right; margin-top: 8px; margin-right: 4px; white-space: nowrap; letter-spacing: -0.2px;"></div>
-                </div>
-                <div id="opts-${safeId}" class="tool-opts-panel" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
+                    <div id="opts-${safeId}" class="tool-opts-panel" style="display: none; padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 120px;">
                             <label style="font-size: 11px; color: #64748b; margin-bottom: 4px;">Implantação (R$)</label>
@@ -104,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             </div>
+            <div id="legend-${safeId}" style="display: none; font-size: 11px; color: var(--primary-green); font-weight: 600; text-align: right; margin-top: 4px; padding-right: 8px; white-space: nowrap; letter-spacing: -0.2px;"></div>
+        </div>
         `}).join('');
     };
     renderToolsGrid();
@@ -127,10 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.removeTool = (id) => {
         const safeId = getSafeId(id);
         const chk = document.getElementById(`chk-tool-${safeId}`);
-        const card = document.getElementById(`card-tool-${safeId}`);
-        if (chk && card) {
+        const wrapper = document.getElementById(`wrapper-tool-${safeId}`);
+        if (chk && wrapper) {
             chk.checked = false;
-            card.style.display = 'none';
+            wrapper.style.display = 'none';
             // Limpa os valores ao remover
             document.getElementById(`price-impl-${safeId}`).value = '';
             document.getElementById(`price-mensal-${safeId}`).value = '';
@@ -149,15 +151,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedId) {
             const safeId = getSafeId(selectedId);
             const chk = document.getElementById(`chk-tool-${safeId}`);
-            const card = document.getElementById(`card-tool-${safeId}`);
-            if (chk && card) {
+            const wrapper = document.getElementById(`wrapper-tool-${safeId}`);
+            if (chk && wrapper) {
                 chk.checked = true;
-                card.style.display = 'block';
+                wrapper.style.display = 'block';
             }
             updateToolSelector();
         }
     });
-    
+
     const checkboxes = toolsGrid.querySelectorAll('input[type="checkbox"]');
     
     const outputContainer = document.getElementById('proposalOutput');
@@ -208,9 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         cb.checked = isSelected;
                         
                         const safeId = getSafeId(cb.value);
-                        const card = document.getElementById(`card-tool-${safeId}`);
-                        if (card) {
-                            card.style.display = isSelected ? 'block' : 'none';
+                        const wrapper = document.getElementById(`wrapper-tool-${safeId}`);
+                        if (wrapper) {
+                            wrapper.style.display = isSelected ? 'block' : 'none';
                         }
                         
                         // Load custom configs if any
@@ -230,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 // Auto preview after a small delay to ensure DOM is ready
-                setTimeout(() => document.getElementById('btnPreview').click(), 100);
+                setTimeout(() => document.getElementById('btnPreviewWeb').click(), 100);
             }
         }
         
@@ -252,9 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
             cb.checked = isRecommended;
             
             const safeId = getSafeId(cb.value);
-            const card = document.getElementById(`card-tool-${safeId}`);
-            if (card) {
-                card.style.display = isRecommended ? 'block' : 'none';
+            const wrapper = document.getElementById(`wrapper-tool-${safeId}`);
+            if (wrapper) {
+                wrapper.style.display = isRecommended ? 'block' : 'none';
                 
                 // Se foi ocultado, limpa os valores
                 if (!isRecommended) {
